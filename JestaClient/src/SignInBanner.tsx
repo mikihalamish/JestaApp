@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, Alert, Image,  } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 
@@ -13,13 +13,13 @@ interface ChildProps {
 const SignInBanner: React.FC<ChildProps> = ({openPage}) => {
 
     return (
-        <View style={styles.banner} onTouchStart={() => openPage(PagesDictionary.SignInPage, true)}>
+        <TouchableOpacity style={styles.banner} onPress={() => openPage(PagesDictionary.SignInPage, true)}>
             <View style={styles.bannerContent}>
                 <Image style={styles.bannerIcon} source={require('../assets/sign-in.png')}></Image>
                 <Text style={styles.bannerText}>Sign In</Text>
                 <Image style={styles.bannerIcon} source={require('../assets/arrow.png')}></Image>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 

@@ -9,6 +9,7 @@ import { PagesDictionary } from './constants/PagesDictionary';
 import JestaSelector from './src/JestaSelector'
 import FixingJesta from './src/FixingJesta'
 import SearchMap from './src/SearchMap';
+import FixingJestaDetails from './src/FixingJestaDetails';
 
 const App: React.FC = () => {
 
@@ -33,10 +34,20 @@ const App: React.FC = () => {
       isOpen: false
     },
     {
-      name: PagesDictionary.FixingJestaPage,
+      name :PagesDictionary.FixingJesta,
       component: FixingJesta,
       isOpen: false
     }
+    /* {
+      name: PagesDictionary.FixingJestaTypeSelectPage,
+      component: FixingJesta,
+      isOpen: false
+    },
+    {
+      name: PagesDictionary.FixingJestaDetailsPage,
+      component: FixingJestaDetails,
+      isOpen: false
+    } */
   ]
 
   useEffect(() => {

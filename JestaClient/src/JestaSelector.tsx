@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, Alert, Image, ScrollView, } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, Alert, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 
@@ -20,27 +20,27 @@ const serviceTypes: service[] = [
     {
         name: "Fixing",
         icon: require("../assets/fixing-icon.png"),
-        page: PagesDictionary.FixingJestaPage
+        page: PagesDictionary.FixingJesta
     },
     {
         name: "Householding",
         icon: require("../assets/householding-icon.png"),
-        page: PagesDictionary.FixingJestaPage
+        page: PagesDictionary.FixingJestaTypeSelectPage
     },
     {
         name: "Delivery",
         icon: require("../assets/delivery-icon.png"),
-        page: PagesDictionary.FixingJestaPage
+        page: PagesDictionary.FixingJestaTypeSelectPage
     },
     {
         name: "Transferring",
         icon: require("../assets/transferring-icon.png"),
-        page: PagesDictionary.FixingJestaPage
+        page: PagesDictionary.FixingJestaTypeSelectPage
     },
     {
         name: "Delivery",
         icon: require("../assets/fixing-icon.png"),
-        page: PagesDictionary.FixingJestaPage
+        page: PagesDictionary.FixingJestaTypeSelectPage
     }
 ]
 
@@ -49,10 +49,10 @@ const JestaSelector: React.FC<ChildProps> = ({ openPage }) => {
     return (
         <ScrollView horizontal style={styles.horizontalScrollContainer}>
             {serviceTypes.map((service, index) => {
-                return <View style={styles.serviceButton} key={index} onTouchStart={() => openPage(service.page, true)}>
+                return <TouchableOpacity style={styles.serviceButton} key={index} onPress={() => openPage(service.page, true)}>
                     <Text style={styles.serviceName}>{service.name}</Text>
                     <Image style={styles.serviceIcon} source={service.icon}></Image>
-                </View>
+                </TouchableOpacity>
             })}
         </ScrollView>
     )
@@ -79,17 +79,18 @@ const styles = StyleSheet.create({
     },
     serviceIcon: {
         position: 'absolute',
-        bottom: 4,
-        right: 4
+        bottom: 8,
+        right: 8
     },
     serviceName: {
         position: 'absolute',
-        top: 4,
-        left: 4,
+        top: 6,
+        left: 6,
         fontWeight: 'bold',
-        color: 'white'
+        color: 'white',
+        fontSize: 12
     }
-    
+
 
 })
 

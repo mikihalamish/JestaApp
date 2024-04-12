@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 
@@ -18,7 +18,7 @@ const SignInPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
 
     return (
         <View style={styles.outerContainer}>
-            <View style={styles.slider} onTouchStart={() => openPage(PagesDictionary.SignInPage,false)}><View style={styles.sliderButton}></View></View>
+            <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.SignInPage,false)}><View style={styles.sliderButton}></View></TouchableOpacity>
             <View style={styles.pageContainer}>
                 <Image style={styles.logo} source={require('../assets/logo-with-text (1).png')}></Image>
                 <View style={styles.ManualLoginContainer}>
@@ -41,24 +41,24 @@ const SignInPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             placeholder="Password"
                         />
                     </View>
-                    <View style={styles.loginButton} onTouchStart={handleLogin}>
+                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                         <Text style={styles.bannerText}>Sign In</Text>
                         <Image style={styles.bannerIcon} source={require('../assets/arrow.png')}></Image>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.textWrap}>
                         <TextInput style={styles.text}>or</TextInput>
                     </View>
-                    <View style={styles.googleButton} onTouchStart={handleLogin}>
+                    <TouchableOpacity style={styles.googleButton} onPress={handleLogin}>
                         <Image style={styles.googleIcon} source={require('../assets/google.png')}></Image>
                         <Text style={styles.googleBannerText}>Sign In With Google</Text>
-                    </View>
+                    </TouchableOpacity>
 
                     <View style={styles.signUp}>
                         <TextInput style={styles.text}>new to Jesta?</TextInput>
-                        <View style={{...styles.loginButton, backgroundColor: colors.secondary_variant}} onTouchStart={() => openPage(PagesDictionary.SignUpPage, true)}>
+                        <TouchableOpacity style={{...styles.loginButton, backgroundColor: colors.secondary_variant}} onPress={() => openPage(PagesDictionary.SignUpPage, true)}>
                             <Text style={styles.bannerText}>Create Your Account</Text>
                             <Image style={styles.bannerIcon} source={require('../assets/arrow.png')}></Image>
-                        </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
