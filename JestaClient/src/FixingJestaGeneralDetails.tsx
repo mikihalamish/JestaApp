@@ -12,14 +12,30 @@ const windowHeight = Dimensions.get('window').height;
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
     prevStage: () => void,
+    note: string,
+    isFlexible: Boolean,
+    budget: string,
+    location: string,
+    setNote: (note: string) => void,
+    setIsFlexible: (is: Boolean) => void,
+    setBudget: (budget: string) => void,
+    setLocation: (location: string) => void,
+    publish: () => void
 }
 
-const FixingJestaGeneralDetails: React.FC<ChildProps> = ({ openPage, prevStage }) => {
-
-    const [note, setNote] = useState<string>('')
-    const [isFlexible, setIsFlexible] = useState<Boolean>(false)
-    const [budget, setBudget] = useState<string>('')
-    const [location, setLocation] = useState<string>('')
+const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
+    openPage,
+    prevStage,
+    note,
+    isFlexible,
+    budget,
+    location,
+    setNote,
+    setIsFlexible,
+    setBudget,
+    setLocation,
+    publish
+ }) => {
 
     return (
         <View style={styles.outerContainer}>
@@ -74,19 +90,19 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({ openPage, prevStage }
                         ></TextInput>
                         <Image style={styles.toggleIcon} source={require('../assets/long-distance.png')}></Image>
                     </View>
-                    <View style={styles.toggleTitle}>
+                    {budget && parseFloat(budget) ? <View style={styles.toggleTitle}>
                         <Text style={styles.toggleText}>flexible?</Text>
                         <Toggle isOn={isFlexible} setIsOn={setIsFlexible}></Toggle>
-                    </View>
+                    </View> : false}
                 </View>
-                {isFlexible ? <View style={styles.budgetSliderContainer}>
-                    <BudgetSlider budget={budget}></BudgetSlider>
+                {isFlexible && budget && parseFloat(budget) ? <View style={styles.budgetSliderContainer}>
+                    <BudgetSlider budget={parseFloat(budget)!}></BudgetSlider>
                 </View> : false}
                 <View style={styles.controlButtonsContainer}>
                     <TouchableOpacity style={styles.saveButton}>
                         <Text style={styles.saveText}>save for later</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.nextButton}>
+                    <TouchableOpacity style={styles.nextButton} onPress={publish}>
                         <Text style={styles.buttonText}>Publish</Text>
                     </TouchableOpacity>
                 </View>

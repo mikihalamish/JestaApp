@@ -5,6 +5,10 @@ import { PagesDictionary } from '../constants/PagesDictionary';
 import FixingJestaDetails from './FixingJestaDetails';
 import FixingJestaTypeSelect from './FixingJestaTypeSelect';
 import FixingJestaGeneralDetails from './FixingJestaGeneralDetails';
+import Database from './Database';
+import { StatusEnum } from '../constants/StatusEnum';
+import { Timestamp } from 'firebase/firestore/lite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -13,9 +17,27 @@ interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
 }
 
-interface photo {
+interface Photo {
     date: Date,
     src: any
+}
+
+interface FixingJesta {
+    type: string,
+    longDistance: Boolean,
+    description: string,
+    uploadedPhotos: Photo[],
+    note: string,
+    budget: string,
+    location: string
+}
+
+interface request {
+    email: string | undefined | null,
+    type: string,
+    details: any,
+    status: StatusEnum,
+    publishTime: number
 }
 
 const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
@@ -25,7 +47,34 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
     const [otherType, setOtherType] = useState<string>('')
     const [isLongDistance, setIsLongDistance] = useState<Boolean>(false)
     const [description, setDescription] = useState<string>('')
-    const [uploadedPhotos, setUploadedPhotos] = useState<photo[]>([])
+    const [uploadedPhotos, setUploadedPhotos] = useState<Photo[]>([])
+    const [note, setNote] = useState<string>('')
+    const [isFlexible, setIsFlexible] = useState<Boolean>(false)
+    const [budget, setBudget] = useState<string>('')
+    const [location, setLocation] = useState<string>('')
+
+    const publishFixingRequest = async () => {
+        const requestDetails: FixingJesta = {
+            type: otherType ? otherType : selectedType,
+            longDistance: isLongDistance,
+            description: description,
+            uploadedPhotos: uploadedPhotos,
+            note: note,
+            budget: budget,
+            location: location
+        }
+        const email = await AsyncStorage.getItem('user_email')
+        console.log(requestDetails)
+        const newRequest: request = {
+            email: email,
+            type: 'Fixing',
+            details: requestDetails,
+            status: StatusEnum.PUBLISHED_BEFORE_APPROVAL,
+            publishTime: Date.now(),
+        }
+        Database.addRequest(newRequest)
+        openPage(PagesDictionary.FixingJesta, false)
+    }
 
     const stages = [
         <FixingJestaTypeSelect
@@ -50,6 +99,15 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
         <FixingJestaGeneralDetails
             openPage={openPage}
             prevStage={() => setStage(stage - 1)}
+            note={note}
+            isFlexible={isFlexible}
+            budget={budget}
+            location={location}
+            setNote={setNote}
+            setLocation={setLocation}
+            setBudget={setBudget}
+            setIsFlexible={setIsFlexible}
+            publish={publishFixingRequest}
         ></FixingJestaGeneralDetails>
     ]
 

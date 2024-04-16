@@ -1,39 +1,119 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
+import { userInteface } from '../constants/Interfaces';
+import Database from './Database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
-    openPage: (pageToOpen:string, toOpen:Boolean) => void,
-    handleLogin: () => void
+    openPage: (pageToOpen: string, toOpen: Boolean) => void,
+    setIsSignedIn: () => void
 }
 
-const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
+const ERROR_MESSAGES = {
+    NO_ERROR: '',
+    EMPTY_FIELD: 'field can not be empty',
+    PASSORD_FORMAT: 'you must use at least 8 digits letters & numbers',
+    PASSWORD_NOT_MATCH: 'passwords not match',
+    EMAIL_USED: 'this email is already signed up'
+}
 
-    const [firstName, setFirstName] = useState<string>('');
-    const [lastName, setLastName] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
-    const [phone, setPhone] = useState<number>();
-    const [password, setPassword] = useState<string>('');
-    const [passwordValidation, setPasswordValidation] = useState<string>('');
+const SignUpPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
+
+    const [firstName, setFirstName] = useState<string>('')
+    const [lastName, setLastName] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
+    const [phone, setPhone] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+    const [passwordValidation, setPasswordValidation] = useState<string>('')
+    const [firstNameError, setFirstNameError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [lastNameError, setlastNameError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [emailError, setEmailError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [phoneError, setPhoneError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [passwordError, setPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [verifyPasswordError, setVerifyPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+
+    const verifyFields = () => {
+        let verifyFlag = true
+        if (!firstName.length) {
+            setFirstNameError(ERROR_MESSAGES.EMPTY_FIELD)
+            verifyFlag = false
+        }
+        if (!lastName.length) {
+            setlastNameError(ERROR_MESSAGES.EMPTY_FIELD)
+            verifyFlag = false
+        }
+        if (!email.length) {
+            setEmailError(ERROR_MESSAGES.EMPTY_FIELD)
+            verifyFlag = false
+        }
+        if (password.length < 8) {
+            setPasswordError(ERROR_MESSAGES.PASSORD_FORMAT)
+            verifyFlag = false
+        }
+        if (passwordValidation != password) {
+            setVerifyPasswordError(ERROR_MESSAGES.PASSWORD_NOT_MATCH)
+            verifyFlag = false
+        }
+        return verifyFlag
+    }
+
+    const signUp = async () => {
+        if (verifyFields()) {
+            const newUser: userInteface = {
+                email: email,
+                firstName: firstName,
+                lastName: lastName,
+                password: password,
+                phoneNumber: phone
+            }
+            if (await Database.signUp(newUser)) {
+                console.log("signedUp")
+                openPage(PagesDictionary.SignUpPage, false)
+                openPage(PagesDictionary.SignInPage, false)
+                setIsSignedIn()
+                try {
+                    AsyncStorage.setItem('user_email', email);
+                } catch (e) {
+                    console.log(e)
+                }
+            } else {
+                setEmailError(ERROR_MESSAGES.EMAIL_USED)
+            }
+        }
+    }
+
+    useEffect(() => {
+        setFirstNameError(ERROR_MESSAGES.NO_ERROR)
+        setlastNameError(ERROR_MESSAGES.NO_ERROR)
+        setEmailError(ERROR_MESSAGES.NO_ERROR)
+        setPasswordError(ERROR_MESSAGES.NO_ERROR)
+        setVerifyPasswordError(ERROR_MESSAGES.NO_ERROR)
+    }, [firstName, lastName, email, password, passwordValidation, phone])
 
     return (
         <View style={styles.outerContainer}>
-            <View style={styles.slider} onTouchStart={() => openPage(PagesDictionary.SignUpPage ,false)}><View style={styles.sliderButton}></View></View>
+            <View style={styles.slider} onTouchStart={() => openPage(PagesDictionary.SignUpPage, false)}><View style={styles.sliderButton}></View></View>
             <View style={styles.pageContainer}>
+                <View style={styles.backContainer} onTouchStart={() => openPage(PagesDictionary.SignUpPage, false)}>
+                    <TouchableOpacity style={styles.backButton} >
+                        <Image style={styles.backIcon} source={require('../assets/back.png')}></Image>
+                    </TouchableOpacity>
+                </View>
                 <Image style={styles.logo} source={require('../assets/logo-with-text (1).png')}></Image>
                 <View style={styles.ManualLoginContainer}>
-                    <View style={styles.googleButton} onTouchStart={handleLogin}>
+                    <View style={styles.googleButton}>
                         <Image style={styles.googleIcon} source={require('../assets/google.png')}></Image>
                         <Text style={styles.googleBannerText}>Sign In With Google</Text>
                     </View>
                     <View style={styles.textWrap}>
                         <TextInput style={styles.text}>or</TextInput>
                     </View>
-                    <View style={styles.inputsContainer}>
+                    <ScrollView style={styles.inputsContainer}>
                         <TextInput
                             style={styles.input}
                             value={firstName}
@@ -44,6 +124,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             placeholder="First Name"
                             autoCorrect
                         />
+                        <Text style={styles.inputError}>{firstNameError}</Text>
                         <TextInput
                             style={styles.input}
                             value={lastName}
@@ -54,16 +135,18 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             placeholder="Last Name"
                             autoCorrect
                         />
+                        <Text style={styles.inputError}>{lastNameError}</Text>
                         <TextInput
                             style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
+                            value={phone}
+                            onChangeText={setPhone}
                             keyboardType="numbers-and-punctuation"
                             autoCapitalize="none"
                             autoComplete="tel"
                             placeholder="Phone Number"
                             autoCorrect
                         />
+                        <Text style={styles.inputError}>{phoneError}</Text>
                         <TextInput
                             style={styles.input}
                             value={email}
@@ -74,6 +157,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             placeholder="Email"
                             autoCorrect
                         />
+                        <Text style={styles.inputError}>{emailError}</Text>
                         <TextInput
                             style={styles.input}
                             value={password}
@@ -81,6 +165,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             secureTextEntry
                             placeholder="Password"
                         />
+                        <Text style={styles.inputError}>{passwordError}</Text>
                         <TextInput
                             style={styles.input}
                             value={passwordValidation}
@@ -88,11 +173,12 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
                             secureTextEntry
                             placeholder="Password Validation"
                         />
-                    </View>
-                    <View style={styles.loginButton} onTouchStart={handleLogin}>
+                        <Text style={styles.inputError}>{verifyPasswordError}</Text>
+                    </ScrollView>
+                    <TouchableOpacity style={styles.loginButton} onPress={signUp}>
                         <Text style={styles.bannerText}>Sign Up</Text>
                         <Image style={styles.bannerIcon} source={require('../assets/arrow.png')}></Image>
-                    </View>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>
@@ -102,22 +188,21 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, handleLogin }) => {
 
 const styles = StyleSheet.create({
     outerContainer: {
-        flex: 1,
+        /*  flex: 1, */
         position: 'absolute',
         alignItems: 'center',
         justifyContent: 'space-between',
         height: windowHeight * 0.95,
         width: windowWidth,
-        bottom: 0,
-
+        bottom: 0
     },
     pageContainer: {
         backgroundColor: colors.background,
-        height: '96%',
         width: '100%',
+        height: '100%',
         borderTopRightRadius: 24,
         borderTopLeftRadius: 24,
-        flex: 1,
+        /* flex: 1, */
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
@@ -138,24 +223,19 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
     },
     logo: {
-        width: '50%',
-        resizeMode: 'contain'
+        height: '13%',
+        resizeMode: 'contain',
+        marginBottom: '5%'
     },
     ManualLoginContainer: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
         width: '90%',
-    },
-    label: {
-        marginBottom: 5,
+        height: '68%'
     },
     input: {
         height: 60,
         width: '100%',
         borderColor: 'gray',
         borderWidth: 1,
-        marginBottom: 20,
         paddingHorizontal: 10,
         borderRadius: 8,
         fontSize: 24
@@ -164,7 +244,6 @@ const styles = StyleSheet.create({
         height: 60,
         width: '100%',
         borderRadius: 50,
-        display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-around',
@@ -228,12 +307,33 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     signUp: {
-        marginTop: '15%',
         width: '100%',
-        height: '18%',
         alignItems: 'center',
-        justifyContent: 'space-between'
-    }
+        justifyContent: 'space-between',
+        marginTop: '5%'
+    },
+    inputError: {
+        color: colors.error,
+        fontSize: 16,
+        marginBottom: '7%',
+        alignSelf: 'flex-end'
+    },
+    backContainer: {
+        width: '90%',
+        height: '10%',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+    },
+    backButton: {
+        backgroundColor: colors.secondary_variant,
+        borderRadius: 50,
+        width: '40%',
+        height: '50%',
+        justifyContent: 'center',
+    },
+    backIcon: {
+        left: 10
+    },
 });
 
 export default SignUpPage

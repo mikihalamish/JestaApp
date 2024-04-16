@@ -25,22 +25,22 @@ const serviceTypes: service[] = [
     {
         name: "Householding",
         icon: require("../assets/householding-icon.png"),
-        page: PagesDictionary.FixingJestaTypeSelectPage
+        page: PagesDictionary.FixingJesta
     },
     {
         name: "Delivery",
         icon: require("../assets/delivery-icon.png"),
-        page: PagesDictionary.FixingJestaTypeSelectPage
+        page: PagesDictionary.FixingJesta
     },
     {
         name: "Transferring",
         icon: require("../assets/transferring-icon.png"),
-        page: PagesDictionary.FixingJestaTypeSelectPage
+        page: PagesDictionary.FixingJesta
     },
     {
         name: "Delivery",
         icon: require("../assets/fixing-icon.png"),
-        page: PagesDictionary.FixingJestaTypeSelectPage
+        page: PagesDictionary.FixingJesta
     }
 ]
 
