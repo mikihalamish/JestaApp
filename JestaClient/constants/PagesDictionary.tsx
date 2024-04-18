@@ -2,5 +2,6 @@ export enum PagesDictionary {
   SignInPage = 'SignIn',
   SignUpPage = 'SignUp',
   FixingJesta = 'FixingJesta',
-  WaitingRequests = 'WaitingRequests'
+  WaitingRequests = 'WaitingRequests',
+  ViewFixingRequest = 'ViewFixingRequest'
 };

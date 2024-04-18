@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, LatLng } from 'react-native-maps';
-import { colors } from '../constants/colors';
-import SearchMap from './SearchMap';
 
 const Map: React.FC = () => {
 

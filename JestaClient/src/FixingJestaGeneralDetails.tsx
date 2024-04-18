@@ -88,7 +88,7 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
                             placeholder="budget"
                             keyboardType='numbers-and-punctuation'
                         ></TextInput>
-                        <Image style={styles.toggleIcon} source={require('../assets/long-distance.png')}></Image>
+                        <Image style={styles.toggleIcon} source={require('../assets/budget.png')}></Image>
                     </View>
                     {budget && parseFloat(budget) ? <View style={styles.toggleTitle}>
                         <Text style={styles.toggleText}>flexible?</Text>

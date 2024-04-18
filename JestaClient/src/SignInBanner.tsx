@@ -7,10 +7,10 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
-    openPage: (pageToOpen:string, toOpen:Boolean) => void,
+    openPage: (pageToOpen: string, toOpen: boolean) => void,
 }
 
-const SignInBanner: React.FC<ChildProps> = ({openPage}) => {
+const SignInBanner: React.FC<ChildProps> = ({ openPage }) => {
 
     return (
         <TouchableOpacity style={styles.banner} onPress={() => openPage(PagesDictionary.SignInPage, true)}>
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
         width: '60%',
     },
     bannerIcon: {
-      resizeMode: 'contain'
+        resizeMode: 'contain'
     }
 })
 

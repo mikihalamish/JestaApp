@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Database from './Database';
+import { userInteface, userLoginInterface } from '../constants/Interfaces';
+import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
+import { useAuth } from './AuthContext';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
-    setIsSignedIn: () => void
 }
 
 const ERROR_MESSAGES = {
@@ -20,12 +22,15 @@ const ERROR_MESSAGES = {
     NOT_MATCH: 'wrong password'
 }
 
-const SignInPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
+export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(ERROR_MESSAGES.NO_ERROR)
     const [passwordError, setPasswordError] = useState(ERROR_MESSAGES.NO_ERROR)
+    const [user, setUser] = useState<userInteface | null>(null);
+
+    const { isAuthenticated, login, logout } = useAuth();
 
     const verifyFields = () => {
         let verifyFlag = true
@@ -45,26 +50,29 @@ const SignInPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
         setPasswordError(ERROR_MESSAGES.NO_ERROR)
     }, [email, password])
 
-    const login = async () => {
+    const loginUser = async () => {
         if (verifyFields()) {
-            let result = await Database.signIn(email, password)
-            if (result == 2) {
-                setIsSignedIn()
+            let result: userLoginInterface = await Database.signIn(email, password)
+            if (result.status == LoginStatusDictionary.SUCCESS) {
+                login(result.user!)
                 openPage(PagesDictionary.SignInPage, false)
-                Alert.alert('Signed In');
-                try {
-                    AsyncStorage.setItem('user_email', email);
-                } catch (e) {
-                    console.log(e)
-                }
             }
-            else if (result == 0) {
+            else if (result.status == LoginStatusDictionary.EMAIL_NOT_EXIST) {
                 setEmailError(ERROR_MESSAGES.EMAIL_NOT_SIGNED_UP)
-            } else if (result == 1) {
+            } else if (result.status == LoginStatusDictionary.WRONG_PASSWORD) {
                 setPasswordError(ERROR_MESSAGES.NOT_MATCH)
             }
         }
     };
+
+    const logoutUser = async () => {
+        setUser(null)
+        await AsyncStorage.clear()
+    }
+
+    useEffect(() => {
+        console.log("isAuthenticated")
+    }, [isAuthenticated])
 
     return (
         <View style={styles.outerContainer}>
@@ -93,7 +101,7 @@ const SignInPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
                         />
                         <Text style={styles.inputError}>{passwordError}</Text>
                     </View>
-                    <TouchableOpacity style={styles.loginButton} onPress={login}>
+                    <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
                         <Text style={styles.bannerText}>Sign In</Text>
                         <Image style={styles.bannerIcon} source={require('../assets/arrow.png')}></Image>
                     </TouchableOpacity>
@@ -115,7 +123,6 @@ const SignInPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
                 </View>
             </View>
         </View>
-
     )
 }
 
@@ -234,7 +241,7 @@ const styles = StyleSheet.create({
     },
     textWrap: {
         width: '100%',
-        height: '15%',
+        height: '10%',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -249,7 +256,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     signUp: {
-        marginTop: '15%',
+        marginTop: '25%',
         width: '100%',
         height: '18%',
         alignItems: 'center',

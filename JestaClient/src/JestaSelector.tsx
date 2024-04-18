@@ -7,7 +7,7 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
-    openPage: (pageToOpen: string, toOpen: Boolean) => void,
+    openPage: (pageToOpen: string, toOpen: boolean) => void,
 }
 
 interface service {

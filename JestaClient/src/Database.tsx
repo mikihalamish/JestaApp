@@ -3,8 +3,9 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, addDoc } from 'firebase/firestore/lite';
 import { ref, set, getDatabase, get, push } from '@firebase/database';
 import { StatusEnum } from '../constants/StatusEnum';
-import { requestInteface, userInteface } from '../constants/Interfaces';
+import { requestInteface, userInteface, userLoginInterface } from '../constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDPFkE-BeD7QlNTte_ffmWaPhmKsOWxzCo",
@@ -38,8 +39,6 @@ const getRequestsWaitingForApproval = async () => {
     try {
         const result = await get(requestsRef);
         const requests: requestInteface[] | null = result.val()
-        console.log('Got Requests');
-
         const requestsArray = Object.values(requests!);
         return requestsArray;
     } catch (error) {
@@ -67,35 +66,50 @@ const signUp = async (newUser: userInteface) => {
 }
 
 const signIn = async (email: string, password: string) => {
+    let userLoginResult: userLoginInterface = {
+        user: null,
+        status: LoginStatusDictionary.UNKNOWN
+    }
     try {
         const result = await get(usersRef);
         const users: userInteface | any = Object.values(result.val())
 
         const user = users.filter((user: userInteface) => user.email == email)[0]
         if (!user) {
-            console.log('email not signed up')
-            return 0
-        } else if(user.password != password) {
-            console.log('wrong password')
-            return 1
+            userLoginResult.status = LoginStatusDictionary.EMAIL_NOT_EXIST
+        } else if (user.password != password) {
+            userLoginResult.status = LoginStatusDictionary.WRONG_PASSWORD
         }
         else {
-            try {
-                AsyncStorage.setItem('user_email', email);
-            } catch (e) {
-                console.log(e)
-            }
-            return 2
+            userLoginResult.status = LoginStatusDictionary.SUCCESS
+            userLoginResult.user = user
         }
+        return userLoginResult
+
     } catch (error) {
-        console.error('Error getting requests: ', error);
+        return userLoginResult
+    }
+}
+
+
+const getUser = async (email: string) => {
+    try {
+        const result = await get(usersRef);
+        const users: userInteface | any = Object.values(result.val())
+        const user: userInteface = users.filter((user: userInteface) => user.email == email)[0]
+        user.password = '********'
+        return user
+
+    } catch (error) {
         return null
     }
 }
+
 
 export default {
     addRequest,
     getRequestsWaitingForApproval,
     signUp,
-    signIn
+    signIn,
+    getUser
 }

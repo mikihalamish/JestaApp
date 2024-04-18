@@ -3,23 +3,24 @@ import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import { PagesDictionary } from '../constants/PagesDictionary';
 import { colors } from '../constants/colors';
 import { StatusEnum } from '../constants/StatusEnum';
+import ViewFixingRequest from './ViewFixingRequest';
+import { requestInteface } from '../constants/Interfaces';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-interface request {
-    type: string,
-    details: any,
-    status: StatusEnum,
-    publishTime: number
-}
-
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
-    requests: request[]
+    requests: requestInteface[]
 }
 
 const WaitingRequests: React.FC<ChildProps> = ({ openPage, requests }) => {
+
+    const [requestToView, setRequestToView] = useState<requestInteface>()
+
+    useEffect(() => {
+        console.log(requestToView)
+    }, [requestToView])
 
     return (
         <View style={styles.outerContainer}>
@@ -28,10 +29,10 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, requests }) => {
                 {requests && requests.length > 0 ?
                     requests.map((request, index) => {
                         return (
-                            <TouchableOpacity key={index} style={styles.banner}>
+                            <TouchableOpacity key={index} style={styles.banner} onPress={() => setRequestToView(request)}>
                                 <View key={index} style={styles.bannerContent}>
                                     <Image style={styles.bannerIcon} source={require('../assets/fixing-icon.png')}></Image>
-                                    <Text style={styles.bannerTypeText}>{request.details['type'] ? request.details['type'] : request.type}</Text>
+                                    <Text style={styles.bannerTypeText}>{request.details?.type ? request.details.type : request.type}</Text>
                                     <View style={styles.bannerTime}>
                                         <Text style={styles.bannerTimeText}>ASAP</Text>
                                     </View>
@@ -41,6 +42,7 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, requests }) => {
                     })
                     : false}
             </ScrollView>
+            {requestToView ? <ViewFixingRequest request={requestToView} close={() => setRequestToView(undefined)}></ViewFixingRequest> : false}
         </View>
     )
 }

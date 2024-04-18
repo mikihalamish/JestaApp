@@ -9,6 +9,7 @@ import Database from './Database';
 import { StatusEnum } from '../constants/StatusEnum';
 import { Timestamp } from 'firebase/firestore/lite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PhotoInterface, requestInteface } from '../constants/Interfaces';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -17,27 +18,14 @@ interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
 }
 
-interface Photo {
-    date: Date,
-    src: any
-}
-
 interface FixingJesta {
     type: string,
     longDistance: Boolean,
     description: string,
-    uploadedPhotos: Photo[],
+    uploadedPhotos: PhotoInterface[],
     note: string,
     budget: string,
     location: string
-}
-
-interface request {
-    email: string | undefined | null,
-    type: string,
-    details: any,
-    status: StatusEnum,
-    publishTime: number
 }
 
 const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
@@ -47,7 +35,7 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
     const [otherType, setOtherType] = useState<string>('')
     const [isLongDistance, setIsLongDistance] = useState<Boolean>(false)
     const [description, setDescription] = useState<string>('')
-    const [uploadedPhotos, setUploadedPhotos] = useState<Photo[]>([])
+    const [uploadedPhotos, setUploadedPhotos] = useState<PhotoInterface[]>([])
     const [note, setNote] = useState<string>('')
     const [isFlexible, setIsFlexible] = useState<Boolean>(false)
     const [budget, setBudget] = useState<string>('')
@@ -65,7 +53,7 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
         }
         const email = await AsyncStorage.getItem('user_email')
         console.log(requestDetails)
-        const newRequest: request = {
+        const newRequest: requestInteface = {
             email: email,
             type: 'Fixing',
             details: requestDetails,

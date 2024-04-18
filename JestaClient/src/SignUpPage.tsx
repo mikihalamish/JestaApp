@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
-import { userInteface } from '../constants/Interfaces';
+import { userInteface, userLoginInterface } from '../constants/Interfaces';
 import Database from './Database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './AuthContext';
+import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
-    setIsSignedIn: () => void
 }
 
 const ERROR_MESSAGES = {
@@ -22,7 +23,7 @@ const ERROR_MESSAGES = {
     EMAIL_USED: 'this email is already signed up'
 }
 
-const SignUpPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
+const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
 
     const [firstName, setFirstName] = useState<string>('')
     const [lastName, setLastName] = useState<string>('')
@@ -36,6 +37,8 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
     const [phoneError, setPhoneError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
     const [passwordError, setPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
     const [verifyPasswordError, setVerifyPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+
+    const { isAuthenticated, loggedUser, login, logout } = useAuth();
 
     const verifyFields = () => {
         let verifyFlag = true
@@ -73,14 +76,13 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage, setIsSignedIn }) => {
             }
             if (await Database.signUp(newUser)) {
                 console.log("signedUp")
-                openPage(PagesDictionary.SignUpPage, false)
-                openPage(PagesDictionary.SignInPage, false)
-                setIsSignedIn()
-                try {
-                    AsyncStorage.setItem('user_email', email);
-                } catch (e) {
-                    console.log(e)
+                let result: userLoginInterface = await Database.signIn(email, password)
+                if (result.status == LoginStatusDictionary.SUCCESS) {
+                    login(result.user!)
+                    openPage(PagesDictionary.SignInPage, false)
                 }
+                openPage(PagesDictionary.SignInPage, false)
+                openPage(PagesDictionary.SignUpPage, false)
             } else {
                 setEmailError(ERROR_MESSAGES.EMAIL_USED)
             }
