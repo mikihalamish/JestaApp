@@ -11,23 +11,20 @@ const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
-    requests: requestInteface[]
+    watingRequests: requestInteface[],
+    stopSearch: () => void
 }
 
-const WaitingRequests: React.FC<ChildProps> = ({ openPage, requests }) => {
+const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests, stopSearch }) => {
 
     const [requestToView, setRequestToView] = useState<requestInteface>()
-
-    useEffect(() => {
-        console.log(requestToView)
-    }, [requestToView])
 
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.WaitingRequests, false)}><View style={styles.sliderButton}></View></TouchableOpacity>
             <ScrollView style={styles.pageContainer}>
-                {requests && requests.length > 0 ?
-                    requests.map((request, index) => {
+                {watingRequests && watingRequests.length > 0 ?
+                    watingRequests.map((request, index) => {
                         return (
                             <TouchableOpacity key={index} style={styles.banner} onPress={() => setRequestToView(request)}>
                                 <View key={index} style={styles.bannerContent}>
@@ -42,7 +39,11 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, requests }) => {
                     })
                     : false}
             </ScrollView>
-            {requestToView ? <ViewFixingRequest request={requestToView} close={() => setRequestToView(undefined)}></ViewFixingRequest> : false}
+            {requestToView ?
+                <ViewFixingRequest
+                    request={requestToView}
+                    close={() => setRequestToView(undefined)}
+                    stopSearch={stopSearch}></ViewFixingRequest> : false}
         </View>
     )
 }

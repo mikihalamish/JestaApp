@@ -10,18 +10,23 @@ import JestaSelector from './src/JestaSelector'
 import FixingJesta from './src/FixingJesta'
 import Database from './src/Database';
 import WaitingRequests from './src/WaitingRequests';
-import { requestInteface, userLoginInterface } from './constants/Interfaces';
+import { requestInteface, userInteface, userLoginInterface } from './constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './src/AuthContext';
 import { LoginStatusDictionary } from './constants/LoginStatusDictionary';
 import ViewFixingRequest from './src/ViewFixingRequest';
+import { StatusEnum } from './constants/StatusEnum';
+import ActiveJestaConsumerBanner from './src/ActiveJestaConsumerBanner';
+import { UserStatusDictionary } from './constants/userStatusDictionary';
 
 const Main: React.FC = () => {
 
   const [pages, setPages] = useState<Pages[]>([])
-  const [requestWaitingForApproval, setRequestWaitingForApproval] = useState<requestInteface[] | null>([])
-
+  const [requests, setRequests] = useState<requestInteface[] | null>([])
+  const [isSearching, setIsSearching] = useState<boolean>(false)
   const { isAuthenticated, loggedUser, login, logout } = useAuth();
+  const [activeUserRequest, setActiveUserRequest] = useState<requestInteface>()
+  const [activeUsers, setActiveUsers] = useState<userInteface[]>()
 
   interface Pages {
     name: string,
@@ -49,13 +54,16 @@ const Main: React.FC = () => {
       name: PagesDictionary.WaitingRequests,
       component: WaitingRequests,
       isOpen: false
-    },
-    {
-      name: PagesDictionary.ViewFixingRequest,
-      component: ViewFixingRequest,
-      isOpen: false
     }
   ]
+
+  useEffect(() => {
+    Database.getUsers().then((result) => {
+      let users: userInteface[] = result
+      users = users.filter((user: userInteface) => user.status == UserStatusDictionary.ACTIVE)
+      setActiveUsers(users)
+    })
+  }, [])
 
   useEffect(() => {
     setPages(app_pages)
@@ -63,9 +71,15 @@ const Main: React.FC = () => {
   }, [])
 
   const getRquestsWaiting = async () => {
-    let requests: requestInteface[] | null = null
     Database.getRequestsWaitingForApproval().then((res) => {
-      setRequestWaitingForApproval(res)
+      setRequests([...res])
+      let loggedUserRequest = res!.filter((request) => request.email == loggedUser?.email &&
+        request.status != StatusEnum.CANCELED_JESTA &&
+        request.status != StatusEnum.JESTA_FINISHED)
+      if (loggedUserRequest.length) {
+        console.log("changed")
+        setActiveUserRequest(loggedUserRequest[0])
+      }
     })
   }
 
@@ -79,7 +93,6 @@ const Main: React.FC = () => {
   }, [isAuthenticated])
 
   const openPage = (pageToOpen: string, toOpen: boolean) => {
-    console.log("open " + pageToOpen)
     let tempPages: Pages[] = pages
     tempPages.map((page) => {
       page.name == pageToOpen ? page.isOpen = toOpen : true
@@ -100,19 +113,29 @@ const Main: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Map></Map>
-      {isAuthenticated && requestWaitingForApproval != null ? <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
-        <View style={styles.requestsCount}><Text style={styles.requestsCountText}>{requestWaitingForApproval.length}</Text></View>
+      <Map isSearching={isSearching} activeUsers={activeUsers}></Map>
+      {isAuthenticated && requests != null ? <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
+        <View style={styles.requestsCount}>
+          <Text style={styles.requestsCountText}>{requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL).length : 0}</Text>
+        </View>
         <Image style={styles.requestsAvatar} source={require('./assets/jesta-avatar.png')}></Image>
       </TouchableOpacity> : false}
       {!isAuthenticated ? <SignInBanner openPage={openPage}></SignInBanner> : false}
       {isAuthenticated ? <JestaSelector openPage={openPage}></JestaSelector> : false}
+      {isAuthenticated && activeUserRequest ?
+        <ActiveJestaConsumerBanner request={activeUserRequest}
+          openPage={openPage}></ActiveJestaConsumerBanner> : false}
       {isAuthenticated ? <TouchableOpacity style={styles.menuButton} onPress={logout}>
         <Text style={styles.username}>{loggedUser?.firstName}</Text>
         <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')}></Image>
       </TouchableOpacity> : false}
       {pages.map((page, index) =>
-        page.isOpen ? <page.component key={index} openPage={openPage} requests={requestWaitingForApproval}/> : false
+        page.isOpen ? <page.component
+          key={index}
+          openPage={openPage}
+          watingRequests={requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) : []}
+          startSearch={() => setIsSearching(true)}
+          stopSearch={() => setIsSearching(false)} /> : false
       )}
     </View>
   );

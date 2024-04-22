@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
 import { userInteface } from '../constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserStatusDictionary } from '../constants/userStatusDictionary';
+import Database from './Database';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -20,7 +22,7 @@ export const AuthProvider: React.FC<ChildProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [loggedUser, setLoggedUser] = useState<userInteface | null>(null);
 
-    const login = (user: userInteface) => {
+    const login = (user: userInteface) => {      
         setLoggedUser(user)
         setIsAuthenticated(true);
         try {

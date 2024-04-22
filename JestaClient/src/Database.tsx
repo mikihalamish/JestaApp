@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { Children } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc } from 'firebase/firestore/lite';
-import { ref, set, getDatabase, get, push } from '@firebase/database';
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore/lite';
+import { ref, set, getDatabase, get, push, update } from '@firebase/database';
 import { StatusEnum } from '../constants/StatusEnum';
 import { requestInteface, userInteface, userLoginInterface } from '../constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
+import { UserStatusDictionary } from '../constants/userStatusDictionary';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDPFkE-BeD7QlNTte_ffmWaPhmKsOWxzCo",
@@ -39,11 +40,15 @@ const getRequestsWaitingForApproval = async () => {
     try {
         const result = await get(requestsRef);
         const requests: requestInteface[] | null = result.val()
-        const requestsArray = Object.values(requests!);
-        return requestsArray;
+        if (requests != null) {
+            const requestsArray = Object.values(requests!);
+            return requestsArray
+        } else {
+            return []
+        }
     } catch (error) {
         console.error('Error getting requests: ', error);
-        return null
+        return []
     }
 }
 
@@ -56,6 +61,8 @@ const signUp = async (newUser: userInteface) => {
             console.log('email already in use')
             return false
         } else {
+            newUser.status = UserStatusDictionary.NOT_ACTIVE
+            newUser.lastSeen = Date.now()
             push(usersRef, newUser)
             return true
         }
@@ -83,6 +90,16 @@ const signIn = async (email: string, password: string) => {
         else {
             userLoginResult.status = LoginStatusDictionary.SUCCESS
             userLoginResult.user = user
+
+            result.forEach((child) => {
+                const doc: userInteface = child.val();
+                if (email == doc.email) {
+                    const updatedDoc: userInteface = doc
+                    updatedDoc.status = UserStatusDictionary.ACTIVE
+                    updatedDoc.lastSeen = Date.now()
+                    update(child.ref, updatedDoc);
+                }
+            })
         }
         return userLoginResult
 
@@ -105,11 +122,46 @@ const getUser = async (email: string) => {
     }
 }
 
+const getUsers = async () => {
+    try {
+        const result = await get(usersRef);
+        const users: userInteface | any = Object.values(result.val())
+        return users
+    } catch (error) {
+        return null
+    }
+}
+
+const updateRequestStatus = async (email: string, publishTime: number, status: StatusEnum) => {
+    try {
+        const snapshot = await get(requestsRef);
+
+        snapshot.forEach((childSnapshot) => {
+            const doc: requestInteface = childSnapshot.val();
+            if (doc.email === email) {
+                const updateDoc: requestInteface = {
+                    email: doc.email,
+                    type: doc.type,
+                    details: doc.details,
+                    status: status,
+                    publishTime: doc.publishTime
+                };
+                update(childSnapshot.ref, updateDoc);
+                console.log('Document updated successfully!');
+            }
+        });
+    } catch (error) {
+        return false
+    }
+}
+
 
 export default {
     addRequest,
     getRequestsWaitingForApproval,
     signUp,
     signIn,
-    getUser
+    getUser,
+    updateRequestStatus,
+    getUsers
 }

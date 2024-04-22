@@ -1,5 +1,6 @@
 import { LoginStatusDictionary } from "./LoginStatusDictionary"
 import { StatusEnum } from "./StatusEnum"
+import { UserStatusDictionary } from "./userStatusDictionary"
 
 interface request {
     email: string | undefined | null,
@@ -14,7 +15,9 @@ interface user {
     firstName: string,
     lastName: string,
     password: string,
-    phoneNumber: string
+    phoneNumber: string,
+    status: UserStatusDictionary,
+    lastSeen: number
 }
 
 interface userLogin {

@@ -16,6 +16,7 @@ const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
+    startSearch: () => void
 }
 
 interface FixingJesta {
@@ -28,7 +29,7 @@ interface FixingJesta {
     location: string
 }
 
-const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
+const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
 
     const [stage, setStage] = useState<number>(0)
     const [selectedType, setSelectedType] = useState<string>('')
@@ -52,7 +53,6 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
             location: location
         }
         const email = await AsyncStorage.getItem('user_email')
-        console.log(requestDetails)
         const newRequest: requestInteface = {
             email: email,
             type: 'Fixing',
@@ -62,6 +62,7 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
         }
         Database.addRequest(newRequest)
         openPage(PagesDictionary.FixingJesta, false)
+        startSearch()
     }
 
     const stages = [

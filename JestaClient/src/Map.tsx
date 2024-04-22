@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, LatLng } from 'react-native-maps';
+import Radar from './Radar';
+import { userInteface } from '../constants/Interfaces';
+import Database from './Database';
+import { UserStatusDictionary } from '../constants/userStatusDictionary';
 
-const Map: React.FC = () => {
+interface ChildProps {
+    isSearching: boolean,
+    activeUsers: userInteface[]
+}
+
+const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
 
     const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
-    const [markers, setMarkers] = useState<User[]>([]);
+    const [markers, setMarkers] = useState<UserLocation[]>([]);
 
-    interface User {
-        firstName: string,
-        lastName: string,
-        email: string,
-        profilePicture: string,
+    interface UserLocation {
+        user: userInteface,
         coordinates: LatLng
     }
 
@@ -20,22 +26,33 @@ const Map: React.FC = () => {
         longitude: 34.8878,
     };
 
-    const users_coordinates: Array<User> = [
+    const users_coordinates: Array<UserLocation> = [
         {
-            firstName: 'Dan',
-            lastName: 'Feithlicher',
-            email: 'd.feithlicher@gmail.com',
-            profilePicture: '../../assets/ProfilePictures/dan_feithlicher.jpg',
+            user: {
+                firstName: 'Dan',
+                lastName: 'Feithlicher',
+                email: 'd.feithlicher@gmail.com',
+                password: '',
+                phoneNumber: '',
+                status: UserStatusDictionary.ACTIVE,
+                lastSeen: 0
+            },
             coordinates: {
                 latitude: 32.0875,
                 longitude: 34.8878,
             }
         },
         {
-            firstName: 'Miki',
-            lastName: 'Halamish',
-            email: 'miki.halamish@gmail.com',
-            profilePicture: '../../assets/ProfilePictures/dan_feithlicher.jpg',
+            user:
+            {
+                firstName: 'Miki',
+                lastName: 'Halamish',
+                email: 'miki.halamish@gmail.com',
+                password: '',
+                phoneNumber: '',
+                status: UserStatusDictionary.ACTIVE,
+                lastSeen: 0
+            },
             coordinates: {
                 latitude: 32.0178,
                 longitude: 34.8691,
@@ -66,9 +83,10 @@ const Map: React.FC = () => {
     }, []);
 
     const getRandomNumber = () => (Math.random() - 0.5) * 0.02;
-    
+
     return (
         <View style={styles.container}>
+            {isSearching ? <Radar></Radar> : false}
             <MapView
                 provider={PROVIDER_GOOGLE}
                 style={styles.map}
@@ -79,7 +97,7 @@ const Map: React.FC = () => {
                 }}
             >
                 {markers.map((marker, index) => (
-                    <Marker key={index} coordinate={marker.coordinates} title={marker.firstName + " " + marker.lastName}>
+                    <Marker key={index} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
                         <Image
                             source={require('../assets/ProfilePictures/dan_feithlicher.jpg')}
                             style={{ width: 40, height: 40, borderRadius: 50 }}
@@ -102,6 +120,12 @@ const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
     },
+    radar: {
+        position: 'absolute',
+        zIndex: 1,
+        alignSelf: 'center',
+        justifyContent: 'center'
+    }
 });
 
 export default Map;

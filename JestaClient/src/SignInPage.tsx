@@ -65,11 +65,6 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
         }
     };
 
-    const logoutUser = async () => {
-        setUser(null)
-        await AsyncStorage.clear()
-    }
-
     useEffect(() => {
         console.log("isAuthenticated")
     }, [isAuthenticated])

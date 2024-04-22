@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import { colors } from '../constants/colors';
 import { StatusEnum } from '../constants/StatusEnum';
@@ -11,10 +11,11 @@ const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     close: () => void,
-    request: requestInteface
+    request: requestInteface,
+    stopSearch: () => void
 }
 
-const ViewFixingRequest: React.FC<ChildProps> = ({ close, request }) => {
+const ViewFixingRequest: React.FC<ChildProps> = ({ close, request, stopSearch }) => {
 
     const [publisherDetails, setPublisherDetails] = useState<userInteface | null>()
 
@@ -26,6 +27,12 @@ const ViewFixingRequest: React.FC<ChildProps> = ({ close, request }) => {
     useEffect(() => {
         getPublisher()
     }, [])
+
+    const approveRequest = () => {
+        Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION)
+        stopSearch()
+        close()
+    }
 
     return (
         <View style={styles.outerContainer}>
@@ -60,6 +67,14 @@ const ViewFixingRequest: React.FC<ChildProps> = ({ close, request }) => {
                         </TouchableOpacity>
                     }) : false}
                 </ScrollView>
+                <View style={styles.controlButtonsContainer}>
+                    <TouchableOpacity style={styles.callButton} onPress={() => {Linking.openURL('tel:' + publisherDetails?.phoneNumber)}}>
+                        <Image source={require('../assets/call-icon.png')}></Image>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.approveButton} onPress={approveRequest}>
+                        <Text style={styles.buttonText}>Approve Jesta</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     )
@@ -102,7 +117,7 @@ const styles = StyleSheet.create({
     },
     backContainer: {
         width: '100%',
-        height: '10%',
+        height: '15%',
         alignItems: 'flex-start',
         justifyContent: 'center',
     },
@@ -183,6 +198,55 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         height: 100,
         width: 100,
+    },
+    controlButtonsContainer: {
+        width: '90%',
+        position: 'absolute',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+        flex: 1,
+        flexDirection: 'row',
+        bottom: 20
+    },
+    approveButton: {
+        height: 60,
+        width: '70%',
+        borderRadius: 50,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        backgroundColor: colors.primary,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 16,
+    },
+    buttonText: {
+        fontSize: 22,
+        color: 'white',
+        fontWeight: '400'
+    },
+    callButton: {
+        height: 60,
+        width: '20%',
+        borderRadius: 50,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        backgroundColor: colors.primary_variant,
+        borderColor: colors.primary,
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 16,
+    },
+    saveText: {
+        color: 'green',
+        fontSize: 20
     },
 })
 
