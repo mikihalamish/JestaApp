@@ -93,18 +93,18 @@ const styles = StyleSheet.create({
     },
     bannerTypeText: {
         color: 'white',
-        fontSize: 24,
+        fontSize: 16,
         width: '40%',
     },
     bannerStatus: {
-        width: '45%',
+        width: '40%',
         height: '80%',
         justifyContent: 'center',
         backgroundColor: 'white',
-        borderRadius: 50
+        borderRadius: 50,
     },
     bannerStatusText: {
-        fontSize: 26,
+        fontSize: 18,
         color: colors.primary,
         justifyContent: 'center',
         alignSelf: 'center'
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     bannerTimeText: {
-        fontSize: 24,
+        fontSize: 20,
         width: '100%',
         color: colors.background,
         justifyContent: 'center',

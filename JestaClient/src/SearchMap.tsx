@@ -29,7 +29,6 @@ const SearchMap: React.FC = () => {
                 `https://data.gov.il/api/3/action/datastore_search?resource_id=9ad3862c-8391-4b2f-84a4-2d4c68625f4b&q=${filter}`
             );
             const json = await response.json();
-            console.log(json.result.records)
             setData(json.result.records);
             setFilteredData(json.result.records);
         } catch (error) {

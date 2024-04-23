@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<ChildProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [loggedUser, setLoggedUser] = useState<userInteface | null>(null);
 
-    const login = (user: userInteface) => {      
+    const login = (user: userInteface) => {
         setLoggedUser(user)
         setIsAuthenticated(true);
         try {
@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<ChildProps> = ({ children }) => {
     };
 
     const logout = async () => {
+        Database.signOut(loggedUser!.email)
         setLoggedUser(null)
         setIsAuthenticated(false);
         await AsyncStorage.clear()

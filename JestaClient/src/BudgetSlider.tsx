@@ -10,10 +10,6 @@ const BudgetSlider: React.FC<ChildProps> = ({ budget }) => {
 
     const [value, setValue] = useState<Number | undefined | Number[] | any>([budget,budget+10])
 
-    useEffect(() => {
-        console.log(budget)
-    }, [budget])
-
     return (
         <View style={styles.container}>
             <Slider

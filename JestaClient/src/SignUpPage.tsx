@@ -7,6 +7,7 @@ import Database from './Database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
+import { UserStatusDictionary } from '../constants/userStatusDictionary';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -72,10 +73,11 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                 firstName: firstName,
                 lastName: lastName,
                 password: password,
-                phoneNumber: phone
+                phoneNumber: phone,
+                status: UserStatusDictionary.NOT_ACTIVE,
+                lastSeen: Date.now()
             }
             if (await Database.signUp(newUser)) {
-                console.log("signedUp")
                 let result: userLoginInterface = await Database.signIn(email, password)
                 if (result.status == LoginStatusDictionary.SUCCESS) {
                     login(result.user!)

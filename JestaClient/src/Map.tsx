@@ -5,6 +5,7 @@ import Radar from './Radar';
 import { userInteface } from '../constants/Interfaces';
 import Database from './Database';
 import { UserStatusDictionary } from '../constants/userStatusDictionary';
+import { useAuth } from './AuthContext';
 
 interface ChildProps {
     isSearching: boolean,
@@ -14,7 +15,9 @@ interface ChildProps {
 const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
 
     const [currentLocation, setCurrentLocation] = useState<LatLng | null>(null);
-    const [markers, setMarkers] = useState<UserLocation[]>([]);
+    const [markers, setMarkers] = useState<UserLocation[] | null>([]);
+
+    const { isAuthenticated, loggedUser } = useAuth();
 
     interface UserLocation {
         user: userInteface,
@@ -26,67 +29,38 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
         longitude: 34.8878,
     };
 
-    const users_coordinates: Array<UserLocation> = [
-        {
-            user: {
-                firstName: 'Dan',
-                lastName: 'Feithlicher',
-                email: 'd.feithlicher@gmail.com',
-                password: '',
-                phoneNumber: '',
-                status: UserStatusDictionary.ACTIVE,
-                lastSeen: 0
-            },
-            coordinates: {
-                latitude: 32.0875,
-                longitude: 34.8878,
-            }
-        },
-        {
-            user:
-            {
-                firstName: 'Miki',
-                lastName: 'Halamish',
-                email: 'miki.halamish@gmail.com',
-                password: '',
-                phoneNumber: '',
-                status: UserStatusDictionary.ACTIVE,
-                lastSeen: 0
-            },
-            coordinates: {
-                latitude: 32.0178,
-                longitude: 34.8691,
-            }
+    const generateCoordinates = () => {
+        const tempCoord: UserLocation[] = []
+        if (activeUsers && activeUsers.length) {
+            activeUsers.map((user) => {
+                tempCoord.push({
+                    user: user,
+                    coordinates: {
+                        latitude: 32.0875 + getRandomNumber(),
+                        longitude: 34.8878 + getRandomNumber()
+                    }
+                })
+            })
+            setMarkers([...tempCoord])
+        } else {
+            console.info("No Active Users")
+            setMarkers(null)
         }
-    ]
+    }
 
     useEffect(() => {
-        setMarkers(users_coordinates)
         setCurrentLocation(petahTikvaCoordinates)
     }, [])
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            // Update coordinates for each user
-            setMarkers(prevUsersCoordinates =>
-                prevUsersCoordinates.map(user => ({
-                    ...user,
-                    coordinates: {
-                        latitude: user.coordinates.latitude + getRandomNumber(),
-                        longitude: user.coordinates.longitude + getRandomNumber()
-                    },
-                }))
-            );
-        }, 1000);
+        generateCoordinates()
+    }, [activeUsers])
 
-        return () => clearInterval(intervalId);
-    }, []);
-
-    const getRandomNumber = () => (Math.random() - 0.5) * 0.02;
+    const getRandomNumber = () => (Math.random() - 0.75) * 0.02;
 
     return (
         <View style={styles.container}>
-            {isSearching ? <Radar></Radar> : false}
+            {isSearching && isAuthenticated ? <Radar></Radar> : false}
             <MapView
                 provider={PROVIDER_GOOGLE}
                 style={styles.map}
@@ -96,13 +70,21 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
                     longitudeDelta: 0.2,
                 }}
             >
-                {markers.map((marker, index) => (
-                    <Marker key={index} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
-                        <Image
-                            source={require('../assets/ProfilePictures/dan_feithlicher.jpg')}
-                            style={{ width: 40, height: 40, borderRadius: 50 }}
-                        />
-                    </Marker>
+                {markers?.map((marker, index) => (
+                    marker.user.email == loggedUser?.email ?
+                        <Marker key={index} coordinate={marker.coordinates} title={"Me"}>
+                            <Image
+                                source={require('../assets/self-marker.png')}
+                                style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}
+                            />
+                        </Marker>
+                        :
+                        <Marker key={index} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
+                            <Image
+                                source={require('../assets/marker.png')}
+                                style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}
+                            />
+                        </Marker>
                 ))}
             </MapView>
 

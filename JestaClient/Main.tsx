@@ -57,12 +57,18 @@ const Main: React.FC = () => {
     }
   ]
 
-  useEffect(() => {
+  const activeUsersInterval = () => {
     Database.getUsers().then((result) => {
-      let users: userInteface[] = result
+      let users: userInteface[] | any = result
       users = users.filter((user: userInteface) => user.status == UserStatusDictionary.ACTIVE)
       setActiveUsers(users)
     })
+  }
+
+  useEffect(() => {
+    setInterval(() => {
+      activeUsersInterval()
+    }, 3000)
   }, [])
 
   useEffect(() => {
@@ -77,7 +83,6 @@ const Main: React.FC = () => {
         request.status != StatusEnum.CANCELED_JESTA &&
         request.status != StatusEnum.JESTA_FINISHED)
       if (loggedUserRequest.length) {
-        console.log("changed")
         setActiveUserRequest(loggedUserRequest[0])
       }
     })
@@ -113,8 +118,8 @@ const Main: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Map isSearching={isSearching} activeUsers={activeUsers}></Map>
-      {isAuthenticated && requests != null ? <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
+      <Map isSearching={isSearching} activeUsers={activeUsers!}></Map>
+      {isAuthenticated && requests && requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL).length ? <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
         <View style={styles.requestsCount}>
           <Text style={styles.requestsCountText}>{requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL).length : 0}</Text>
         </View>

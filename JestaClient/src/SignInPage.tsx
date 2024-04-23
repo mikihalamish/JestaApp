@@ -65,10 +65,6 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
         }
     };
 
-    useEffect(() => {
-        console.log("isAuthenticated")
-    }, [isAuthenticated])
-
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.SignInPage, false)}><View style={styles.sliderButton}></View></TouchableOpacity>

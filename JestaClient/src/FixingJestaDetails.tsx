@@ -36,7 +36,6 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
         try {
             const result = await ImagePicker.launchCameraAsync()
             if (!result.canceled && result.assets && result.assets[0]) {
-                console.log("uri: " + result.assets[0].uri)
                 let uploadedPhotosTemp: photo[] = uploadedPhotos
                 uploadedPhotosTemp.push({
                     date: new Date(Date.now()),

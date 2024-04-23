@@ -108,6 +108,31 @@ const signIn = async (email: string, password: string) => {
     }
 }
 
+const signOut = async (email: string) => {
+    try {
+        const result = await get(usersRef);
+        const users: userInteface | any = Object.values(result.val())
+
+        const user = users.filter((user: userInteface) => user.email == email)[0]
+        if (!user) {
+            return false
+        }
+
+        result.forEach((child) => {
+            const doc: userInteface = child.val();
+            if (email == doc.email) {
+                const updatedDoc: userInteface = doc
+                updatedDoc.status = UserStatusDictionary.NOT_ACTIVE
+                updatedDoc.lastSeen = Date.now()
+                update(child.ref, updatedDoc);
+            }
+        })
+        return true
+
+    } catch (error) {
+        return false
+    }
+}
 
 const getUser = async (email: string) => {
     try {
@@ -125,8 +150,7 @@ const getUser = async (email: string) => {
 const getUsers = async () => {
     try {
         const result = await get(usersRef);
-        const users: userInteface | any = Object.values(result.val())
-        return users
+        return Object.values(result.val())
     } catch (error) {
         return null
     }
@@ -161,6 +185,7 @@ export default {
     getRequestsWaitingForApproval,
     signUp,
     signIn,
+    signOut,
     getUser,
     updateRequestStatus,
     getUsers
