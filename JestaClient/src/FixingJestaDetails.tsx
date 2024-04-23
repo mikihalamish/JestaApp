@@ -4,6 +4,9 @@ import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import * as ImagePicker from 'expo-image-picker';
 import Toggle from './Toggle';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import Database from './Database';
+import { useAuth } from './AuthContext';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -27,9 +30,11 @@ interface ChildProps {
 
 const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextStage, isLongDistance, setIsLongDistance, description, setDescription, uploadedPhotos, setUploadedPhotos }) => {
 
+    const { loggedUser } = useAuth();
+
     useEffect(() => {
         setDescription(description),
-        setUploadedPhotos(uploadedPhotos)
+            setUploadedPhotos(uploadedPhotos)
     }, [])
 
     const handleChoosePhoto = async () => {
@@ -37,9 +42,11 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
             const result = await ImagePicker.launchCameraAsync()
             if (!result.canceled && result.assets && result.assets[0]) {
                 let uploadedPhotosTemp: photo[] = uploadedPhotos
+                const imageUrl = await Database.uploadFileToFirebaseStorage(loggedUser!.email, result.assets[0].uri)
+                console.info(imageUrl)
                 uploadedPhotosTemp.push({
                     date: new Date(Date.now()),
-                    src: result.assets[0].uri
+                    src: imageUrl
                 })
                 setUploadedPhotos([...uploadedPhotosTemp])
             }
@@ -89,6 +96,8 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
                 </ScrollView>
                 <ScrollView horizontal style={styles.horizontalScrollContainer}>
                     {uploadedPhotos.map((photo, index) => {
+                        console.log("photo.src")
+                        console.log(photo.src)
                         return <TouchableOpacity style={styles.photoContainer} key={index}>
                             <Image style={styles.photo} source={{ uri: photo.src }}></Image>
                         </TouchableOpacity>

@@ -1,12 +1,12 @@
 import React, { Children } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore/lite';
 import { ref, set, getDatabase, get, push, update } from '@firebase/database';
 import { StatusEnum } from '../constants/StatusEnum';
 import { requestInteface, userInteface, userLoginInterface } from '../constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
 import { UserStatusDictionary } from '../constants/userStatusDictionary';
+import { getStorage, uploadBytes, ref as sRef, getDownloadURL } from 'firebase/storage';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDPFkE-BeD7QlNTte_ffmWaPhmKsOWxzCo",
@@ -21,6 +21,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const storage = getStorage(app)
 
 const requestsRef = ref(database, 'requests');
 const usersRef = ref(database, 'users');
@@ -179,6 +180,18 @@ const updateRequestStatus = async (email: string, publishTime: number, status: S
     }
 }
 
+const uploadFileToFirebaseStorage = async (email: string, localUri: string) => {
+    try {
+        const imagesRef = sRef(storage, `/${email}/image:${Date.now()}`)
+        const response = await fetch(localUri);
+        const blob = await response.blob();
+        const snapshot = await uploadBytes(imagesRef, blob)
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL
+    } catch (error) {
+        console.error('Error uploading file:', error);
+    }
+}
 
 export default {
     addRequest,
@@ -188,5 +201,6 @@ export default {
     signOut,
     getUser,
     updateRequestStatus,
-    getUsers
+    getUsers,
+    uploadFileToFirebaseStorage
 }
