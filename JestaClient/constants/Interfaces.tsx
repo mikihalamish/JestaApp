@@ -7,7 +7,8 @@ interface request {
     type: string,
     details: FixingJesta | null | undefined,
     status: StatusEnum,
-    publishTime: number
+    publishTime: number,
+    provider: string | null
 }
 
 interface user {
@@ -40,10 +41,10 @@ interface FixingJesta {
     location: string
 }
 
-export type { 
+export type {
     user as userInteface,
     request as requestInteface,
     userLogin as userLoginInterface,
     Photo as PhotoInterface,
     FixingJesta as FixingJestaInterface
- }
+}

@@ -30,6 +30,7 @@ interface ChildProps {
 
 const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextStage, isLongDistance, setIsLongDistance, description, setDescription, uploadedPhotos, setUploadedPhotos }) => {
 
+    const [isLoading, setIsLoading] = useState<boolean>(false)
     const { loggedUser } = useAuth();
 
     useEffect(() => {
@@ -38,12 +39,12 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
     }, [])
 
     const handleChoosePhoto = async () => {
+        setIsLoading(true)
         try {
             const result = await ImagePicker.launchCameraAsync()
             if (!result.canceled && result.assets && result.assets[0]) {
                 let uploadedPhotosTemp: photo[] = uploadedPhotos
                 const imageUrl = await Database.uploadFileToFirebaseStorage(loggedUser!.email, result.assets[0].uri)
-                console.info(imageUrl)
                 uploadedPhotosTemp.push({
                     date: new Date(Date.now()),
                     src: imageUrl
@@ -66,6 +67,10 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
     useEffect(() => {
         requestPermission()
     }, [])
+
+    useEffect(() => {
+        setIsLoading(false)
+    }, [uploadedPhotos])
 
     return (
         <View style={styles.outerContainer}>
@@ -96,12 +101,15 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
                 </ScrollView>
                 <ScrollView horizontal style={styles.horizontalScrollContainer}>
                     {uploadedPhotos.map((photo, index) => {
-                        console.log("photo.src")
-                        console.log(photo.src)
                         return <TouchableOpacity style={styles.photoContainer} key={index}>
                             <Image style={styles.photo} source={{ uri: photo.src }}></Image>
                         </TouchableOpacity>
                     })}
+                    {isLoading ?
+                        <TouchableOpacity style={styles.loadingContainer} key={-2}>
+                            <Image style={styles.loadGif} source={require('../assets/load-photo-gif.gif')}></Image>
+                        </TouchableOpacity>
+                        : false}
                     <TouchableOpacity style={styles.uploadButton} key={-1} onPress={handleChoosePhoto}>
                         <Image style={styles.uploadIcon} source={require('../assets/upload.png')}></Image>
                     </TouchableOpacity>
@@ -195,7 +203,8 @@ const styles = StyleSheet.create({
         height: '4%',
     },
     descriptionInput: {
-        height: 130,
+        height: 'auto',
+        minHeight: '80%',
         width: '100%',
         borderColor: 'gray',
         borderWidth: 1,
@@ -299,9 +308,29 @@ const styles = StyleSheet.create({
         borderStyle: 'dashed',
         justifyContent: 'center'
     },
+    loadingContainer: {
+        height: 100,
+        width: 100,
+        marginLeft: 20,
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 16,
+        borderColor: colors.font,
+        borderWidth: 1,
+        backgroundColor: colors.secondary_background,
+        borderStyle: 'dashed',
+        justifyContent: 'center'
+    },
     uploadIcon: {
         alignSelf: 'center',
         resizeMode: 'contain',
+    },
+    loadGif: {
+        alignSelf: 'center',
+        resizeMode: 'contain',
+        width: '70%'
     },
     longDistance: {
         height: '5%',

@@ -6,6 +6,6 @@ export const colors = {
     third: '#1881F5',
     secondary_background: '#EBECEF',
     background: '#ffffff',
-    error: '#FF0000',
+    error: '#D12913',
     font: '#363636'
 }

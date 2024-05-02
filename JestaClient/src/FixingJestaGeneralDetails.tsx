@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
-import * as ImagePicker from 'expo-image-picker';
-import BudgetSlider from './BudgetSlider'
 import Toggle from './Toggle';
+import { Picker } from '@react-native-picker/picker';
+import RNPickerSelect, { PickerStyle } from 'react-native-picker-select';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+
+interface PickerItem {
+    label: string;
+    value: string;
+}
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
@@ -23,6 +28,8 @@ interface ChildProps {
     publish: () => void
 }
 
+const BLANK = " "
+
 const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
     openPage,
     prevStage,
@@ -35,7 +42,64 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
     setBudget,
     setLocation,
     publish
- }) => {
+}) => {
+
+    const [selectedValue, setSelectedValue] = useState<string>('');
+
+    const [citiesList, setCitiesList] = useState<PickerItem[]>([]);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await fetch(
+                `https://data.gov.il/api/3/action/datastore_search?resource_id=8f714b6f-c35c-4b40-a0e7-547b675eee0e&`
+            );
+            const json = await response.json();
+            let tempCities: PickerItem[] = []
+            json.result.records.map((city: any) => {
+                const cityname: string = city["city_name_en"].toLowerCase()
+                if (cityname != BLANK) {
+                    console.log(city["city_name_en"].toLowerCase())
+                    tempCities.push({ label: cityname, value: cityname })
+                }
+            })
+            setCitiesList([...tempCities])
+        } catch (error) {
+            console.log(`Error fetching data: + ${error}`);
+        }
+    };
+
+    const pickerStyle: PickerStyle = {
+        inputIOS: {
+            width: windowWidth * 0.78,
+            height: '90%',
+            borderColor: colors.font,
+            borderWidth: 1,
+            borderRadius: 90,
+            fontSize: 20,
+            alignSelf: 'center',
+            justifyContent: 'flex-start',
+            color: colors.font,
+            padding: 10,
+            alignItems: 'center',
+            alignContent: 'center',
+        },
+        inputAndroid: {
+            width: '85%',
+            height: '70%',
+            borderColor: colors.font,
+            borderWidth: 1,
+            borderRadius: 8,
+            fontSize: 20,
+            alignSelf: 'center',
+            justifyContent: 'flex-start',
+            color: colors.font,
+            padding: 10
+        },
+    }
 
     return (
         <View style={styles.outerContainer}>
@@ -49,14 +113,23 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
                     </TouchableOpacity>
                 </View>
                 <View style={styles.locationContainer}>
-                    <TextInput
+                    {/* <TextInput
                         style={styles.locationInput}
                         value={location}
                         editable
                         onChangeText={setLocation}
                         placeholder="location"
-                        keyboardType='numbers-and-punctuation'
-                    ></TextInput>
+                    ></TextInput> */}
+                    <RNPickerSelect
+                        onValueChange={(value) => setSelectedValue(value)}
+                        style={pickerStyle}
+                        items={citiesList}
+                        value={selectedValue}
+                        placeholder={{
+                            label: 'Choose location...',
+                            value: null,
+                        }}
+                    />
                     <Image style={styles.locationIcon} source={require('../assets/location.png')}></Image>
                 </View>
                 <View style={styles.scheduleContainer}>
@@ -95,9 +168,6 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
                         <Toggle isOn={isFlexible} setIsOn={setIsFlexible}></Toggle>
                     </View> : false}
                 </View>
-                {isFlexible && budget && parseFloat(budget) ? <View style={styles.budgetSliderContainer}>
-                    <BudgetSlider budget={parseFloat(budget)!}></BudgetSlider>
-                </View> : false}
                 <View style={styles.controlButtonsContainer}>
                     <TouchableOpacity style={styles.saveButton}>
                         <Text style={styles.saveText}>save for later</Text>
@@ -194,10 +264,10 @@ const styles = StyleSheet.create({
     },
     locationContainer: {
         width: '90%',
-        height: '10%',
+        height: '8%',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexDirection: 'row-reverse'
+        flexDirection: 'row-reverse',
     },
     locationInput: {
         width: '85%',

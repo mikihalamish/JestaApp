@@ -37,7 +37,7 @@ const addRequest = async (requestToAdd: requestInteface) => {
     }
 }
 
-const getRequestsWaitingForApproval = async () => {
+const getRequests = async () => {
     try {
         const result = await get(requestsRef);
         const requests: requestInteface[] | null = result.val()
@@ -157,10 +157,14 @@ const getUsers = async () => {
     }
 }
 
-const updateRequestStatus = async (email: string, publishTime: number, status: StatusEnum) => {
+const updateRequestStatus = async (email: string, publishTime: number, status: StatusEnum, providerEmail?: string) => {
     try {
+        let provider = null
+        if (status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && providerEmail != null) {
+            console.log("provider")
+            provider = providerEmail
+        }
         const snapshot = await get(requestsRef);
-
         snapshot.forEach((childSnapshot) => {
             const doc: requestInteface = childSnapshot.val();
             if (doc.email === email) {
@@ -169,7 +173,8 @@ const updateRequestStatus = async (email: string, publishTime: number, status: S
                     type: doc.type,
                     details: doc.details,
                     status: status,
-                    publishTime: doc.publishTime
+                    publishTime: doc.publishTime,
+                    provider: provider
                 };
                 update(childSnapshot.ref, updateDoc);
                 console.log('Document updated successfully!');
@@ -195,7 +200,7 @@ const uploadFileToFirebaseStorage = async (email: string, localUri: string) => {
 
 export default {
     addRequest,
-    getRequestsWaitingForApproval,
+    getRequests,
     signUp,
     signIn,
     signOut,

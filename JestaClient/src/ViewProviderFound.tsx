@@ -13,26 +13,29 @@ const windowHeight = Dimensions.get('window').height;
 interface ChildProps {
     close: () => void,
     request: requestInteface,
-    stopSearch: () => void
 }
 
-const ViewFixingRequest: React.FC<ChildProps> = ({ close, request, stopSearch }) => {
+const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
 
-    const [publisherDetails, setPublisherDetails] = useState<userInteface | null>()
+    const [providerDetails, setProviderDetails] = useState<userInteface | null>()
     const { isAuthenticated, loggedUser, login, logout } = useAuth();
 
-    const getPublisher = async () => {
-        const publisher = await Database.getUser(request.email!)
-        setPublisherDetails(publisher)
+    const getProvider = async () => {
+        const provider = await Database.getUser(request.provider!)
+        setProviderDetails(provider)
     }
 
     useEffect(() => {
-        getPublisher()
+        getProvider()
     }, [])
 
-    const approveRequest = () => {
-        Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION, loggedUser?.email)
-        stopSearch()
+    const approveJesta = async () => {
+        await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA, request.provider!)
+        close()
+    }
+
+    const cancelJesta = async () => {
+        await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.CANCELED_JESTA)
         close()
     }
 
@@ -48,35 +51,33 @@ const ViewFixingRequest: React.FC<ChildProps> = ({ close, request, stopSearch })
                 <View style={styles.topContainer}>
                     <View style={styles.avatarContainer}>
                         <Image style={styles.avatar} source={require('../assets/avatar.png')}></Image>
-                        <Text style={styles.publisherName}>{publisherDetails?.firstName + ' ' + publisherDetails?.lastName}</Text>
+                        <Text style={styles.publisherName}>{providerDetails?.firstName + ' ' + providerDetails?.lastName}</Text>
                     </View>
-                </View>
-                <View style={styles.timeContainer}>
-                    <Image style={styles.avatar} source={require('../assets/schedule.png')}></Image>
-                    <Text style={styles.scheduleText}>ASAP</Text>
                 </View>
                 <View style={styles.timeContainer}>
                     <Image style={styles.avatar} source={require('../assets/budget.png')}></Image>
                     <Text style={styles.scheduleText}>{request.details?.budget}$</Text>
                 </View>
-                <View style={styles.descriptionContainer}>
-                    <Text style={styles.description}>{request.details?.description}</Text>
-                </View>
-                <ScrollView horizontal style={styles.horizontalScrollContainer}>
-                    {request.details?.uploadedPhotos ? request.details?.uploadedPhotos.map((photo, index) => {
-                        return <TouchableOpacity style={styles.photoContainer} key={index}>
-                            <Image style={styles.photo} source={{ uri: photo.src }}></Image>
-                        </TouchableOpacity>
-                    }) : false}
-                </ScrollView>
-                <View style={styles.controlButtonsContainer}>
-                    <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + publisherDetails?.phoneNumber) }}>
+                {request.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION ? 
+                <View style={styles.controlButtonsContainerSuggestion}>
+                    <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
                         <Image source={require('../assets/call-icon.png')}></Image>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.approveButton} onPress={approveRequest}>
-                        <Text style={styles.buttonText}>Approve Jesta</Text>
+                    <TouchableOpacity style={styles.approveButton} onPress={approveJesta}>
+                        <Text style={styles.buttonText}>Approve Jesta Provider</Text>
                     </TouchableOpacity>
-                </View>
+                </View> : false}
+                {request.status == StatusEnum.ACTIVE_JESTA ? <View style={styles.controlButtonsContainerActive}>
+                    <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
+                        <Image source={require('../assets/call-icon.png')}></Image>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.cancelButton} onPress={cancelJesta}>
+                        <Text style={styles.buttonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.finishButton} onPress={approveJesta}>
+                        <Text style={styles.buttonText}>Finish Jesta</Text>
+                    </TouchableOpacity>
+                </View> : false}
             </View>
         </View>
     )
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: windowHeight * 0.7,
+        height: windowHeight * 0.4,
         width: windowWidth,
         bottom: 0,
         zIndex: 1,
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     },
     backContainer: {
         width: '100%',
-        height: '15%',
+        height: '20%',
         alignItems: 'flex-start',
         justifyContent: 'center',
     },
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
         left: 10
     },
     topContainer: {
-        height: '12%',
+        height: '25%',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexDirection: 'row'
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
         color: colors.font
     },
     timeContainer: {
-        height: '12%',
+        height: '20%',
         alignItems: 'center',
         justifyContent: 'flex-start',
         flexDirection: 'row',
@@ -179,29 +180,17 @@ const styles = StyleSheet.create({
         color: colors.primary,
         width: '100%'
     },
-    horizontalScrollContainer: {
-        width: '100%',
-        height: '5%',
+    controlButtonsContainerSuggestion: {
+        width: '90%',
+        position: 'absolute',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'space-between',
+        flex: 1,
+        flexDirection: 'row',
+        bottom: 20
     },
-    photoContainer: {
-        height: 100,
-        width: 100,
-        marginLeft: 20,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.16,
-        shadowRadius: 16,
-    },
-    photo: {
-        resizeMode: 'cover',
-        borderRadius: 8,
-        borderColor: colors.font,
-        borderWidth: 1,
-        height: 100,
-        width: 100,
-    },
-    controlButtonsContainer: {
+    controlButtonsContainerActive: {
         width: '90%',
         position: 'absolute',
         alignItems: 'center',
@@ -220,6 +209,34 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-around',
         backgroundColor: colors.primary,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 16,
+    },
+    finishButton: {
+        height: 60,
+        width: '40%',
+        borderRadius: 50,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        backgroundColor: colors.primary,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.16,
+        shadowRadius: 16,
+    },
+    cancelButton: {
+        height: 60,
+        width: '30%',
+        borderRadius: 50,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        backgroundColor: colors.error,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.16,
@@ -252,4 +269,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default ViewFixingRequest;
+export default ViewProviderFound;

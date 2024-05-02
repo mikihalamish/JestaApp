@@ -32,7 +32,7 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
     const generateCoordinates = () => {
         const tempCoord: UserLocation[] = []
         if (activeUsers && activeUsers.length) {
-            activeUsers.map((user) => {
+            activeUsers.filter((user) => user.email != loggedUser?.email).map((user) => {
                 tempCoord.push({
                     user: user,
                     coordinates: {
@@ -56,7 +56,7 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
         generateCoordinates()
     }, [activeUsers])
 
-    const getRandomNumber = () => (Math.random() - 0.75) * 0.02;
+    const getRandomNumber = () => (Math.random() - 0.05) * 0.02;
 
     return (
         <View style={styles.container}>
@@ -70,21 +70,19 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
                     longitudeDelta: 0.2,
                 }}
             >
+                <Marker key={0} coordinate={currentLocation!} title={"Me"}>
+                    <Image
+                        source={require('../assets/self-marker.png')}
+                        style={{ width: 50, height: 50, borderRadius: 50, resizeMode: 'contain' }}
+                    />
+                </Marker>
                 {markers?.map((marker, index) => (
-                    marker.user.email == loggedUser?.email ?
-                        <Marker key={index} coordinate={marker.coordinates} title={"Me"}>
-                            <Image
-                                source={require('../assets/self-marker.png')}
-                                style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}
-                            />
-                        </Marker>
-                        :
-                        <Marker key={index} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
-                            <Image
-                                source={require('../assets/marker.png')}
-                                style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}
-                            />
-                        </Marker>
+                    <Marker key={index + 1} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
+                        <Image
+                            source={require('../assets/marker.png')}
+                            style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}
+                        />
+                    </Marker>
                 ))}
             </MapView>
 

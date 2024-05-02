@@ -156,13 +156,14 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: '50%',
-        resizeMode: 'contain'
+        resizeMode: 'contain',
+        height: '25%'
     },
     ManualLoginContainer: {
-        flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
         width: '90%',
+        height: '55%',
     },
     label: {
         marginBottom: 5,
@@ -207,7 +208,6 @@ const styles = StyleSheet.create({
         shadowRadius: 16,
         borderColor: colors.font,
         borderWidth: 1
-
     },
     bannerText: {
         color: 'white',
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     },
     inputsContainer: {
         width: '100%',
-        height: '30%'
+        height: '45%'
     },
     textWrap: {
         width: '100%',
@@ -247,11 +247,10 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     signUp: {
-        marginTop: '25%',
         width: '100%',
-        height: '18%',
+        height: '44%',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'center',
     },
     inputError: {
         color: colors.error,

@@ -19,6 +19,11 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests, stopS
 
     const [requestToView, setRequestToView] = useState<requestInteface>()
 
+    const close = () => {
+        setRequestToView(undefined)
+        openPage(PagesDictionary.WaitingRequests, false)
+    }
+
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.WaitingRequests, false)}><View style={styles.sliderButton}></View></TouchableOpacity>
@@ -42,7 +47,7 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests, stopS
             {requestToView ?
                 <ViewFixingRequest
                     request={requestToView}
-                    close={() => setRequestToView(undefined)}
+                    close={close}
                     stopSearch={stopSearch}></ViewFixingRequest> : false}
         </View>
     )

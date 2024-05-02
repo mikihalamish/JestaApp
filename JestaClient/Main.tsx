@@ -18,6 +18,7 @@ import ViewFixingRequest from './src/ViewFixingRequest';
 import { StatusEnum } from './constants/StatusEnum';
 import ActiveJestaConsumerBanner from './src/ActiveJestaConsumerBanner';
 import { UserStatusDictionary } from './constants/userStatusDictionary';
+import ViewProviderFound from './src/ViewProviderFound';
 
 const Main: React.FC = () => {
 
@@ -25,8 +26,9 @@ const Main: React.FC = () => {
   const [requests, setRequests] = useState<requestInteface[] | null>([])
   const [isSearching, setIsSearching] = useState<boolean>(false)
   const { isAuthenticated, loggedUser, login, logout } = useAuth();
-  const [activeUserRequest, setActiveUserRequest] = useState<requestInteface>()
+  const [activeUserRequest, setActiveUserRequest] = useState<requestInteface | null>()
   const [activeUsers, setActiveUsers] = useState<userInteface[]>()
+  const [providerSuggestionToView, setProviderSuggestionToView] = useState<requestInteface>()
 
   interface Pages {
     name: string,
@@ -77,19 +79,28 @@ const Main: React.FC = () => {
   }, [])
 
   const getRquestsWaiting = async () => {
-    Database.getRequestsWaitingForApproval().then((res) => {
+    Database.getRequests().then((res) => {
       setRequests([...res])
-      let loggedUserRequest = res!.filter((request) => request.email == loggedUser?.email &&
+      const loggedUserRequest = res!.find((request) => request.email == loggedUser?.email &&
         request.status != StatusEnum.CANCELED_JESTA &&
         request.status != StatusEnum.JESTA_FINISHED)
-      if (loggedUserRequest.length) {
-        setActiveUserRequest(loggedUserRequest[0])
+      if (loggedUserRequest) {
+        /* if (loggedUserRequest.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && activeUserRequest?.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) {
+          Alert.alert("You Have An Update", "someone approved your Jesta!")
+        }
+        if (activeUserRequest?.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && loggedUserRequest.status == StatusEnum.ACTIVE_JESTA) {
+          Alert.alert("You Have An Update", "Your Jesta is on the way!")
+        } */
+        setActiveUserRequest(loggedUserRequest)
+      } else {
+        setActiveUserRequest(null)
       }
     })
   }
 
   useEffect(() => {
     if (isAuthenticated) {
+      console.log(loggedUser?.email)
       getRquestsWaiting()
       setInterval(() => {
         getRquestsWaiting()
@@ -116,32 +127,61 @@ const Main: React.FC = () => {
     }
   }
 
+  const waitingRequests = () => {
+    if (requests && requests.length) {
+      return requests!.filter((request) =>
+        request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL &&
+        request.email != loggedUser?.email)
+    } else {
+      return []
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Map isSearching={isSearching} activeUsers={activeUsers!}></Map>
-      {isAuthenticated && requests && requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL).length ? <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
-        <View style={styles.requestsCount}>
-          <Text style={styles.requestsCountText}>{requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL).length : 0}</Text>
-        </View>
-        <Image style={styles.requestsAvatar} source={require('./assets/jesta-avatar.png')}></Image>
-      </TouchableOpacity> : false}
-      {!isAuthenticated ? <SignInBanner openPage={openPage}></SignInBanner> : false}
-      {isAuthenticated ? <JestaSelector openPage={openPage}></JestaSelector> : false}
+      <Map isSearching={(activeUserRequest != null && activeUserRequest.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL)} activeUsers={activeUsers!} />
+      {isAuthenticated && waitingRequests().length ?
+        <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
+          <View style={styles.requestsCount}>
+            <Text style={styles.requestsCountText}>{requests ? waitingRequests().length : 0}</Text>
+          </View>
+          <Image style={styles.requestsAvatar} source={require('./assets/jesta-avatar.png')}></Image>
+        </TouchableOpacity>
+        : false}
+      {!isAuthenticated ?
+        <SignInBanner openPage={openPage} />
+        : false}
+      {isAuthenticated ?
+        <JestaSelector openPage={openPage} />
+        : false}
       {isAuthenticated && activeUserRequest ?
-        <ActiveJestaConsumerBanner request={activeUserRequest}
-          openPage={openPage}></ActiveJestaConsumerBanner> : false}
-      {isAuthenticated ? <TouchableOpacity style={styles.menuButton} onPress={logout}>
-        <Text style={styles.username}>{loggedUser?.firstName}</Text>
-        <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')}></Image>
-      </TouchableOpacity> : false}
-      {pages.map((page, index) =>
-        page.isOpen ? <page.component
-          key={index}
+        <ActiveJestaConsumerBanner
+          request={activeUserRequest}
           openPage={openPage}
-          watingRequests={requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) : []}
-          startSearch={() => setIsSearching(true)}
-          stopSearch={() => setIsSearching(false)} /> : false
+          ViewProvider={setProviderSuggestionToView} />
+        : false}
+      {isAuthenticated ?
+        <TouchableOpacity style={styles.menuButton} onPress={logout}>
+          <Text style={styles.username}>{loggedUser?.firstName}</Text>
+          <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')}></Image>
+        </TouchableOpacity>
+        : false}
+      {pages.map((page, index) =>
+        page.isOpen ?
+          <page.component
+            key={index}
+            openPage={openPage}
+            watingRequests={requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) : []}
+            startSearch={() => setIsSearching(true)}
+            stopSearch={() => setIsSearching(false)} />
+          : false
       )}
+      {providerSuggestionToView ?
+        <ViewProviderFound
+          request={providerSuggestionToView}
+          close={() => setProviderSuggestionToView(undefined)}
+        />
+        : false}
     </View>
   );
 }
@@ -197,24 +237,24 @@ const styles = StyleSheet.create({
     top: '5%',
     left: 20,
     backgroundColor: colors.primary,
-    height: 60,
-    width: '30%',
+    height: '6%',
+    width: '40%',
     justifyContent: 'space-between',
     flexDirection: 'row-reverse',
     borderRadius: 8
   },
   logoutIcon: {
     resizeMode: 'contain',
-    height: '60%',
+    height: '50%',
     alignSelf: 'center',
     justifyContent: 'center',
-    width: '50%'
+    width: '35%'
   },
   username: {
     color: 'white',
     fontSize: 26,
     alignSelf: 'center',
-    width: '50%'
+    width: '65%'
   }
 });
 

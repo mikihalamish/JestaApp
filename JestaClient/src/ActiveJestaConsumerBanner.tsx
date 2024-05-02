@@ -11,35 +11,35 @@ const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: boolean) => void,
-    request: requestInteface
+    request: requestInteface,
+    ViewProvider: (request: requestInteface) => void
 }
 
-
-const ActiveJestaConsumerBanner: React.FC<ChildProps> = ({ openPage, request }) => {
+const ActiveJestaConsumerBanner: React.FC<ChildProps> = ({ openPage, request, ViewProvider }) => {
 
     const approveJesta = () => {
         Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA)
-    }
-
-    const cancelJesta = () => {
-        Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.CANCELED_JESTA)
     }
 
     const requestStatus = (status: StatusEnum) => {
         if (status == StatusEnum.ACTIVE_JESTA)
             return 'on the way'
         else if (status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) {
-            return 'searching'
+            return 'Searching...'
         }
         else if (status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION) {
-            return 'found'
+            return 'Provider Found!'
         }
         else if (status == StatusEnum.CANCELED_JESTA) {
-            return 'canceled'
+            return 'Canceled'
         }
     }
+
     return (
-        <TouchableOpacity style={styles.banner} onPress={approveJesta}>
+        <TouchableOpacity
+            style={[styles.banner,
+            { backgroundColor: request.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION || request.status == StatusEnum.ACTIVE_JESTA ? colors.third : colors.secondary_variant }]}
+            onPress={() => request.status == StatusEnum.ACTIVE_JESTA || request.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION ? ViewProvider(request) : false}>
             <View style={styles.bannerContent}>
                 <Image style={styles.bannerIcon} source={require('../assets/fixing-icon.png')}></Image>
                 <View style={styles.bannerStatus}>
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.third,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.16,

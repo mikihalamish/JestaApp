@@ -59,6 +59,7 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
             details: requestDetails,
             status: StatusEnum.PUBLISHED_BEFORE_APPROVAL,
             publishTime: Date.now(),
+            provider: null
         }
         Database.addRequest(newRequest)
         openPage(PagesDictionary.FixingJesta, false)
