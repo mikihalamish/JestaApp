@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
@@ -38,8 +38,29 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
     const [phoneError, setPhoneError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
     const [passwordError, setPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
     const [verifyPasswordError, setVerifyPasswordError] = useState<string>(ERROR_MESSAGES.NO_ERROR)
+    const [isKeyBoard, setIsKeyBoard] = useState<boolean>(false)
 
+    const firstNameRef = useRef<TextInput>(null);
+    const lastNameRef = useRef<TextInput>(null);
+    const phoneRef = useRef<TextInput>(null);
+    const emailRef = useRef<TextInput>(null);
+    const passwordRef = useRef<TextInput>(null);
+    const passwordValidationRef = useRef<TextInput>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
+    
     const { isAuthenticated, loggedUser, login, logout } = useAuth();
+
+    const handleInputFocus = (ref: React.RefObject<TextInput>) => {
+        setIsKeyBoard(true)
+        ref.current?.measureLayout(scrollViewRef.current! as any, (x, y, width, height) => {
+            scrollViewRef.current?.scrollTo({ x: 0, y: y - 20, animated: true });
+        });
+    };
+
+    const toNextInput = (ref: React.RefObject<TextInput>) => {
+        handleInputFocus(ref)
+        ref.current?.focus()
+    }
 
     const verifyFields = () => {
         let verifyFlag = true
@@ -117,7 +138,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                     <View style={styles.textWrap}>
                         <TextInput style={styles.text}>or</TextInput>
                     </View>
-                    <ScrollView style={styles.inputsContainer}>
+                    <ScrollView style={styles.inputsContainer} ref={scrollViewRef}>
                         <TextInput
                             style={styles.input}
                             value={firstName}
@@ -127,6 +148,10 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             autoComplete="name"
                             placeholder="First Name"
                             autoCorrect
+                            ref={firstNameRef}
+                            onFocus={() => handleInputFocus(firstNameRef)}
+                            onBlur={() => setIsKeyBoard(false)}
+                            onSubmitEditing={() => toNextInput(lastNameRef)}
                         />
                         <Text style={styles.inputError}>{firstNameError}</Text>
                         <TextInput
@@ -138,6 +163,10 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             autoComplete="name-family"
                             placeholder="Last Name"
                             autoCorrect
+                            ref={lastNameRef}
+                            onFocus={() => handleInputFocus(lastNameRef)}
+                            onBlur={() => setIsKeyBoard(false)}
+                            onSubmitEditing={() => toNextInput(phoneRef)}
                         />
                         <Text style={styles.inputError}>{lastNameError}</Text>
                         <TextInput
@@ -149,6 +178,10 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             autoComplete="tel"
                             placeholder="Phone Number"
                             autoCorrect
+                            ref={phoneRef}
+                            onFocus={() => handleInputFocus(phoneRef)}
+                            onBlur={() => setIsKeyBoard(false)}
+                            onSubmitEditing={() => toNextInput(emailRef)}
                         />
                         <Text style={styles.inputError}>{phoneError}</Text>
                         <TextInput
@@ -160,6 +193,10 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             autoComplete="email"
                             placeholder="Email"
                             autoCorrect
+                            ref={emailRef}
+                            onFocus={() => handleInputFocus(emailRef)}
+                            onBlur={() => setIsKeyBoard(false)}
+                            onSubmitEditing={() => toNextInput(passwordRef)}
                         />
                         <Text style={styles.inputError}>{emailError}</Text>
                         <TextInput
@@ -168,6 +205,10 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             onChangeText={setPassword}
                             secureTextEntry
                             placeholder="Password"
+                            ref={passwordRef}
+                            onFocus={() => handleInputFocus(passwordRef)}
+                            onBlur={() => setIsKeyBoard(false)}
+                            onSubmitEditing={() => toNextInput(passwordValidationRef)}
                         />
                         <Text style={styles.inputError}>{passwordError}</Text>
                         <TextInput
@@ -176,8 +217,12 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                             onChangeText={setPasswordValidation}
                             secureTextEntry
                             placeholder="Password Validation"
+                            ref={passwordValidationRef}
+                            onFocus={() => handleInputFocus(passwordValidationRef)}
+                            onBlur={() => setIsKeyBoard(false)}
                         />
                         <Text style={styles.inputError}>{verifyPasswordError}</Text>
+                        {(isKeyBoard) ? <View style={styles.scrollSection}></View> : null}
                     </ScrollView>
                     <TouchableOpacity style={styles.loginButton} onPress={signUp}>
                         <Text style={styles.bannerText}>Sign Up</Text>
@@ -243,6 +288,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderRadius: 8,
         fontSize: 24
+    },
+    scrollSection: {
+        height: 250,
+        width: '100%',
+        backgroundColor: colors.background
     },
     loginButton: {
         height: 60,
