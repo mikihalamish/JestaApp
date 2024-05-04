@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<ChildProps> = ({ children }) => {
             AsyncStorage.setItem('user_email', user.email)
             AsyncStorage.setItem('user_password', user.password)
         } catch (e) {
-            console.log("AsyncStorage Error")
+            console.error("AsyncStorage Error")
         }
     };
 

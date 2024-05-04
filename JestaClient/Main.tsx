@@ -100,7 +100,6 @@ const Main: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      console.log(loggedUser?.email)
       getRquestsWaiting()
       setInterval(() => {
         getRquestsWaiting()

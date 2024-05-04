@@ -39,6 +39,11 @@ const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
         close()
     }
 
+    const finishJesta = async () => {
+        await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.JESTA_FINISHED)
+        close()
+    }
+
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={close}><View style={styles.sliderButton}></View></TouchableOpacity>
@@ -74,7 +79,7 @@ const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
                     <TouchableOpacity style={styles.cancelButton} onPress={cancelJesta}>
                         <Text style={styles.buttonText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.finishButton} onPress={approveJesta}>
+                    <TouchableOpacity style={styles.finishButton} onPress={finishJesta}>
                         <Text style={styles.buttonText}>Finish Jesta</Text>
                     </TouchableOpacity>
                 </View> : false}

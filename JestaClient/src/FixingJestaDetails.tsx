@@ -53,7 +53,7 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
             }
         }
         catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
 

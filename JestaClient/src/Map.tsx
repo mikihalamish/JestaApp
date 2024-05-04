@@ -32,7 +32,7 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
     const generateCoordinates = () => {
         const tempCoord: UserLocation[] = []
         if (activeUsers && activeUsers.length) {
-            activeUsers.filter((user) => user.email != loggedUser?.email).map((user) => {
+            activeUsers.map((user) => {
                 tempCoord.push({
                     user: user,
                     coordinates: {
@@ -42,6 +42,7 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
                 })
             })
             setMarkers([...tempCoord])
+            console.log(markers)
         } else {
             console.info("No Active Users")
             setMarkers(null)
@@ -70,14 +71,14 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers }) => {
                     longitudeDelta: 0.2,
                 }}
             >
-                <Marker key={0} coordinate={currentLocation!} title={"Me"}>
+                <Marker key={-1} coordinate={currentLocation!} title={"Me"}>
                     <Image
                         source={require('../assets/self-marker.png')}
                         style={{ width: 50, height: 50, borderRadius: 50, resizeMode: 'contain' }}
                     />
                 </Marker>
-                {markers?.map((marker, index) => (
-                    <Marker key={index + 1} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
+                {markers?.filter((marker) => marker.user.email != loggedUser?.email).map((marker, index) => (
+                    <Marker key={index} coordinate={marker.coordinates} title={marker.user.firstName + " " + marker.user.lastName}>
                         <Image
                             source={require('../assets/marker.png')}
                             style={{ width: 100, height: 100, borderRadius: 50, resizeMode: 'contain' }}

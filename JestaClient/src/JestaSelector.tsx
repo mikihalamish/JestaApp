@@ -49,7 +49,7 @@ const JestaSelector: React.FC<ChildProps> = ({ openPage }) => {
     return (
         <ScrollView horizontal style={styles.horizontalScrollContainer}>
             {serviceTypes.map((service, index) => {
-                return <TouchableOpacity onPress={() => openPage(service.page, true)}>
+                return <TouchableOpacity key={index} onPress={() => openPage(service.page, true)}>
                     <LinearGradient start={{ x: -0.5, y: 0 }} end={{ x: 1, y: 1 }} colors={[colors.primary, colors.primary_variant]} style={styles.serviceButton} key={index} >
                         <Text style={styles.serviceName}>{service.name}</Text>
                         <Image style={styles.serviceIcon} source={service.icon}></Image>
