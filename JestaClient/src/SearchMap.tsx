@@ -32,19 +32,9 @@ const SearchMap: React.FC = () => {
             setData(json.result.records);
             setFilteredData(json.result.records);
         } catch (error) {
-            Alert.alert(`Error fetching data: + ${error}`);
+            console.error(`Error fetching data: + ${error}`);
         }
     };
-    /* 
-        const handleSearch = (text: string) => {
-            setSearchQuery(text);
-            const filtered = data.filter((item) => {
-                Alert.alert(item.fieldName)
-                item.fieldName.toLowerCase().includes(text.toLowerCase())
-            }
-            );
-            setFilteredData(filtered);
-        }; */
 
     return (
         <View style={styles.container}>

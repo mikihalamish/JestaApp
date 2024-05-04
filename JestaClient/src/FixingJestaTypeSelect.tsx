@@ -27,23 +27,23 @@ const fixTypes: fixType[] = [
     },
     {
         name: "wood",
-        icon: require("../assets/electricity.png"),
+        icon: require("../assets/wood.png"),
     },
     {
         name: "renovation",
-        icon: require("../assets/electricity.png"),
+        icon: require("../assets/rennovation.png"),
     },
     {
         name: "plumbing",
-        icon: require("../assets/electricity.png"),
+        icon: require("../assets/plumb.png"),
     },
     {
         name: "gardening",
-        icon: require("../assets/electricity.png"),
+        icon: require("../assets/gardening.png"),
     },
     {
         name: "computering",
-        icon: require("../assets/electricity.png"),
+        icon: require("../assets/computering.png"),
     }
 ]
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, Alert } from 'react-native';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import { colors } from '../constants/colors';
 import { StatusEnum } from '../constants/StatusEnum';
@@ -30,7 +30,7 @@ const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
     }, [])
 
     const approveJesta = async () => {
-        await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA, request.provider!)
+        await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA)
         close()
     }
 

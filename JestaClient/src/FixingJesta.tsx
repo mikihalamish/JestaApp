@@ -11,9 +11,6 @@ import { Timestamp } from 'firebase/firestore/lite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PhotoInterface, requestInteface } from '../constants/Interfaces';
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
     startSearch: () => void

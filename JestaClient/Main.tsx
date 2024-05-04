@@ -163,6 +163,7 @@ const Main: React.FC = () => {
       {isAuthenticated ?
         <TouchableOpacity style={styles.menuButton} onPress={logout}>
           <Text style={styles.username}>{loggedUser?.firstName}</Text>
+          <Image style={styles.profilePicture} source={require('./assets/avatar.png')}></Image>
           <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')}></Image>
         </TouchableOpacity>
         : false}
@@ -236,25 +237,40 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '5%',
     left: 20,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.background,
     height: '6%',
-    width: '40%',
+    width: '50%',
     justifyContent: 'space-between',
     flexDirection: 'row-reverse',
-    borderRadius: 8
+    borderRadius: 50,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
   },
   logoutIcon: {
     resizeMode: 'contain',
-    height: '50%',
+    height: '100%',
     alignSelf: 'center',
     justifyContent: 'center',
-    width: '35%'
+    width: '25%',
+    transform: [{rotate: '180deg'}],
+  },
+  profilePicture: {
+    resizeMode: 'contain',
+    height: '90%',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: '25%',
+
   },
   username: {
-    color: 'white',
+    color: colors.secondary,
     fontSize: 26,
     alignSelf: 'center',
-    width: '65%'
+    width: '50%',
+    padding: 2
   }
 });
 

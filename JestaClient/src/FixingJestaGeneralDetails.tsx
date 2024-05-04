@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, Button, Platform } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import Toggle from './Toggle';
-import { Picker } from '@react-native-picker/picker';
 import RNPickerSelect, { PickerStyle } from 'react-native-picker-select';
 
 const windowWidth = Dimensions.get('window').width;
@@ -36,7 +35,6 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
     note,
     isFlexible,
     budget,
-    location,
     setNote,
     setIsFlexible,
     setBudget,
@@ -45,14 +43,15 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
 }) => {
 
     const [selectedValue, setSelectedValue] = useState<string>('');
-
     const [citiesList, setCitiesList] = useState<PickerItem[]>([]);
+    const [date, setDate] = useState<Date>(new Date());
+    const [show, setShow] = useState<boolean>(false);
 
     useEffect(() => {
-        fetchData();
+        getCitiesFromURL();
     }, []);
 
-    const fetchData = async () => {
+    const getCitiesFromURL = async () => {
         try {
             const response = await fetch(
                 `https://data.gov.il/api/3/action/datastore_search?resource_id=8f714b6f-c35c-4b40-a0e7-547b675eee0e&`
@@ -62,7 +61,6 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
             json.result.records.map((city: any) => {
                 const cityname: string = city["city_name_en"].toLowerCase()
                 if (cityname != BLANK) {
-                    console.log(city["city_name_en"].toLowerCase())
                     tempCities.push({ label: cityname, value: cityname })
                 }
             })
@@ -113,13 +111,6 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
                     </TouchableOpacity>
                 </View>
                 <View style={styles.locationContainer}>
-                    {/* <TextInput
-                        style={styles.locationInput}
-                        value={location}
-                        editable
-                        onChangeText={setLocation}
-                        placeholder="location"
-                    ></TextInput> */}
                     <RNPickerSelect
                         onValueChange={(value) => setSelectedValue(value)}
                         style={pickerStyle}

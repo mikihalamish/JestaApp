@@ -159,11 +159,11 @@ const getUsers = async () => {
 
 const updateRequestStatus = async (email: string, publishTime: number, status: StatusEnum, providerEmail?: string) => {
     try {
-        let provider = null
-        if (status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && providerEmail != null) {
+        /* let provider = null
+        if (status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && providerEmail != null && providerEmail != undefined) {
             console.log("provider")
             provider = providerEmail
-        }
+        } */
         const snapshot = await get(requestsRef);
         snapshot.forEach((childSnapshot) => {
             const doc: requestInteface = childSnapshot.val();
@@ -174,7 +174,7 @@ const updateRequestStatus = async (email: string, publishTime: number, status: S
                     details: doc.details,
                     status: status,
                     publishTime: doc.publishTime,
-                    provider: provider
+                    provider: status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && providerEmail ? providerEmail : doc.provider
                 };
                 update(childSnapshot.ref, updateDoc);
                 console.log('Document updated successfully!');
