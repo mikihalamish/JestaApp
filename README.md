@@ -5,8 +5,6 @@ The technological platform will enable users to receive an occasional service ("
 
 ## Features
 
-List the key features of your app. For example:
-
 - Publish fixing, delivery, transferring and more Jesta requests 
 - See Active Users
 - Provide Jesta to others
