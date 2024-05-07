@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, Button, Platform } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
+import { PickerItemInterface } from '../constants/Interfaces';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import Toggle from './Toggle';
 import RNPickerSelect, { PickerStyle } from 'react-native-picker-select';
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-
-interface PickerItem {
-    label: string;
-    value: string;
-}
+const windowWidth = Dimensions.get('window').width
+const windowHeight = Dimensions.get('window').height
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
@@ -28,6 +24,7 @@ interface ChildProps {
 }
 
 const BLANK = " "
+const LOCATIONS_API_URL = "https://data.gov.il/api/3/action/datastore_search?resource_id=8f714b6f-c35c-4b40-a0e7-547b675eee0e&"
 
 const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
     openPage,
@@ -42,22 +39,18 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
     publish
 }) => {
 
-    const [selectedValue, setSelectedValue] = useState<string>('');
-    const [citiesList, setCitiesList] = useState<PickerItem[]>([]);
-    const [date, setDate] = useState<Date>(new Date());
-    const [show, setShow] = useState<boolean>(false);
+    const [selectedValue, setSelectedValue] = useState<string>('')
+    const [citiesList, setCitiesList] = useState<PickerItemInterface[]>([])
 
     useEffect(() => {
-        getCitiesFromURL();
-    }, []);
+        getCitiesFromURL()
+    }, [])
 
     const getCitiesFromURL = async () => {
         try {
-            const response = await fetch(
-                `https://data.gov.il/api/3/action/datastore_search?resource_id=8f714b6f-c35c-4b40-a0e7-547b675eee0e&`
-            );
-            const json = await response.json();
-            let tempCities: PickerItem[] = []
+            const response = await fetch(LOCATIONS_API_URL)
+            const json = await response.json()
+            let tempCities: PickerItemInterface[] = []
             json.result.records.map((city: any) => {
                 const cityname: string = city["city_name_en"].toLowerCase()
                 if (cityname != BLANK) {
@@ -66,37 +59,8 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
             })
             setCitiesList([...tempCities])
         } catch (error) {
-            console.error(`Error fetching data: + ${error}`);
+            console.error(`FixingJestaGeneralDetails/getCitiesFromURL: Error fetching cities, ${error}`)
         }
-    };
-
-    const pickerStyle: PickerStyle = {
-        inputIOS: {
-            width: windowWidth * 0.78,
-            height: '90%',
-            borderColor: colors.font,
-            borderWidth: 1,
-            borderRadius: 90,
-            fontSize: 20,
-            alignSelf: 'center',
-            justifyContent: 'flex-start',
-            color: colors.font,
-            padding: 10,
-            alignItems: 'center',
-            alignContent: 'center',
-        },
-        inputAndroid: {
-            width: '85%',
-            height: '70%',
-            borderColor: colors.font,
-            borderWidth: 1,
-            borderRadius: 8,
-            fontSize: 20,
-            alignSelf: 'center',
-            justifyContent: 'flex-start',
-            color: colors.font,
-            padding: 10
-        },
     }
 
     return (
@@ -171,6 +135,35 @@ const FixingJestaGeneralDetails: React.FC<ChildProps> = ({
         </View>
 
     )
+}
+
+const pickerStyle: PickerStyle = {
+    inputIOS: {
+        width: windowWidth * 0.78,
+        height: '90%',
+        borderColor: colors.font,
+        borderWidth: 1,
+        borderRadius: 90,
+        fontSize: 20,
+        alignSelf: 'center',
+        justifyContent: 'flex-start',
+        color: colors.font,
+        padding: 10,
+        alignItems: 'center',
+        alignContent: 'center',
+    },
+    inputAndroid: {
+        width: '85%',
+        height: '70%',
+        borderColor: colors.font,
+        borderWidth: 1,
+        borderRadius: 8,
+        fontSize: 20,
+        alignSelf: 'center',
+        justifyContent: 'flex-start',
+        color: colors.font,
+        padding: 10
+    },
 }
 
 const styles = StyleSheet.create({
@@ -313,19 +306,6 @@ const styles = StyleSheet.create({
         marginLeft: '15%',
         paddingLeft: 8,
     },
-    textWrap: {
-        width: '100%',
-        height: '1%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    text: {
-        fontSize: 20
-    },
-    budgetSliderContainer: {
-        width: '90%',
-        height: '20%'
-    },
     controlButtonsContainer: {
         width: '90%',
         alignItems: 'center',
@@ -374,48 +354,6 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 20
     },
-    horizontalScrollContainer: {
-        width: '100%',
-        height: '5%',
-    },
-    photoContainer: {
-        height: 100,
-        width: 100,
-        marginLeft: 20,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.16,
-        shadowRadius: 16,
-    },
-    photo: {
-        resizeMode: 'cover',
-        borderRadius: 8,
-        borderColor: colors.font,
-        borderWidth: 1,
-        height: 100,
-        width: 100,
-    },
-    uploadButton: {
-        height: 100,
-        width: 100,
-        marginLeft: 20,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.16,
-        shadowRadius: 16,
-        borderColor: colors.font,
-        borderWidth: 1,
-        marginRight: 20,
-        backgroundColor: colors.secondary_background,
-        borderStyle: 'dashed',
-        justifyContent: 'center'
-    },
-    uploadIcon: {
-        alignSelf: 'center',
-        resizeMode: 'contain',
-    },
     budget: {
         height: '10%',
         width: '90%',
@@ -458,6 +396,6 @@ const styles = StyleSheet.create({
         color: colors.font,
         opacity: 0.5
     }
-});
+})
 
 export default FixingJestaGeneralDetails

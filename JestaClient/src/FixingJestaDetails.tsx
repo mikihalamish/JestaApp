@@ -2,18 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, ScrollView, Alert, Keyboard } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
-import * as ImagePicker from 'expo-image-picker';
-import Toggle from './Toggle';
+import { PhotoInterface } from '../constants/Interfaces';
 import Database from './Database';
+import Toggle from './Toggle';
 import { useAuth } from './AuthContext';
+import * as ImagePicker from 'expo-image-picker';
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
-
-interface photo {
-    date: Date,
-    src: any
-}
+const windowWidth = Dimensions.get('window').width
+const windowHeight = Dimensions.get('window').height
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
@@ -23,26 +19,44 @@ interface ChildProps {
     setIsLongDistance: (isOn: Boolean) => void,
     description: string,
     setDescription: (desc: string) => void,
-    uploadedPhotos: photo[],
-    setUploadedPhotos: (photos: photo[]) => void,
+    uploadedPhotos: PhotoInterface[],
+    setUploadedPhotos: (photos: PhotoInterface[]) => void,
 }
 
-const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextStage, isLongDistance, setIsLongDistance, description, setDescription, uploadedPhotos, setUploadedPhotos }) => {
+const FixingJestaDetails: React.FC<ChildProps> = ({
+    openPage,
+    prevStage,
+    nextStage,
+    isLongDistance,
+    setIsLongDistance,
+    description,
+    setDescription,
+    uploadedPhotos,
+    setUploadedPhotos
+}) => {
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const { loggedUser } = useAuth();
+    const { loggedUser } = useAuth()
 
     useEffect(() => {
         setDescription(description)
         setUploadedPhotos(uploadedPhotos)
     }, [])
 
+    useEffect(() => {
+        requestPermission()
+    }, [])
+
+    useEffect(() => {
+        setIsLoading(false)
+    }, [uploadedPhotos])
+
     const handleChoosePhoto = async () => {
         setIsLoading(true)
         try {
             const result = await ImagePicker.launchCameraAsync()
             if (!result.canceled && result.assets && result.assets[0]) {
-                let uploadedPhotosTemp: photo[] = uploadedPhotos
+                let uploadedPhotosTemp: PhotoInterface[] = uploadedPhotos
                 const imageUrl = await Database.uploadFileToFirebaseStorage(loggedUser!.email, result.assets[0].uri)
                 uploadedPhotosTemp.push({
                     date: new Date(Date.now()),
@@ -52,7 +66,7 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
             }
         }
         catch (error) {
-            console.error(error)
+            console.error(`FixingJestaDetails/handleChoosePhoto: ${error}`)
         }
     }
 
@@ -63,18 +77,10 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
         }
     }
 
-    useEffect(() => {
-        requestPermission()
-    }, [])
-
-    useEffect(() => {
-        setIsLoading(false)
-    }, [uploadedPhotos])
-
     const setDescAndAutoHideKeyboard = (text: string) => {
-        setDescription(text);
+        setDescription(text)
         if (text.endsWith('\n\n')) {
-            Keyboard.dismiss();
+            Keyboard.dismiss()
         }
     }
 
@@ -220,15 +226,6 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         color: colors.font
     },
-    textWrap: {
-        width: '100%',
-        height: '1%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    text: {
-        fontSize: 20
-    },
     controlButtonsContainer: {
         width: '90%',
         alignItems: 'center',
@@ -361,6 +358,6 @@ const styles = StyleSheet.create({
         marginLeft: '5%',
         color: colors.font
     }
-});
+})
 
 export default FixingJestaDetails

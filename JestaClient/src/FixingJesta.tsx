@@ -1,32 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Alert } from 'react-native';
-import { colors } from '../constants/colors';
+import React, { useState } from 'react';
 import { PagesDictionary } from '../constants/PagesDictionary';
+import { StatusEnum } from '../constants/StatusEnum';
+import { PhotoInterface, requestInteface, FixingJestaInterface } from '../constants/Interfaces';
 import FixingJestaDetails from './FixingJestaDetails';
 import FixingJestaTypeSelect from './FixingJestaTypeSelect';
 import FixingJestaGeneralDetails from './FixingJestaGeneralDetails';
 import Database from './Database';
-import { StatusEnum } from '../constants/StatusEnum';
-import { Timestamp } from 'firebase/firestore/lite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PhotoInterface, requestInteface } from '../constants/Interfaces';
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
-    startSearch: () => void
 }
 
-interface FixingJesta {
-    type: string,
-    longDistance: Boolean,
-    description: string,
-    uploadedPhotos: PhotoInterface[],
-    note: string,
-    budget: string,
-    location: string
-}
-
-const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
+const FixingJesta: React.FC<ChildProps> = ({ openPage }) => {
 
     const [stage, setStage] = useState<number>(0)
     const [selectedType, setSelectedType] = useState<string>('')
@@ -40,7 +26,7 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
     const [location, setLocation] = useState<string>('')
 
     const publishFixingRequest = async () => {
-        const requestDetails: FixingJesta = {
+        const requestDetails: FixingJestaInterface = {
             type: otherType ? otherType : selectedType,
             longDistance: isLongDistance,
             description: description,
@@ -60,7 +46,6 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
         }
         Database.addRequest(newRequest)
         openPage(PagesDictionary.FixingJesta, false)
-        startSearch()
     }
 
     const stages = [
@@ -103,8 +88,4 @@ const FixingJesta: React.FC<ChildProps> = ({ openPage, startSearch }) => {
     )
 }
 
-const styles = StyleSheet.create({
-
-})
-
-export default FixingJesta;
+export default FixingJesta

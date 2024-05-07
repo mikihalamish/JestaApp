@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
-import { PagesDictionary } from '../constants/PagesDictionary';
 
 interface ChildProps {
     isOn: Boolean,
@@ -50,4 +49,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default Toggle;
+export default Toggle

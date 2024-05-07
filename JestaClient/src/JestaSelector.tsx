@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, Alert, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, Dimensions, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
+import { ServiceInterface } from '../constants/Interfaces';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const windowWidth = Dimensions.get('window').width;
+const windowWidth = Dimensions.get('window').width
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: boolean) => void,
 }
 
-interface service {
-    name: string,
-    icon: any,
-    page: PagesDictionary
-}
-
-const serviceTypes: service[] = [
+const serviceTypes: ServiceInterface[] = [
     {
         name: "Fix",
         icon: require("../assets/fixing-icon.png"),
@@ -50,7 +45,12 @@ const JestaSelector: React.FC<ChildProps> = ({ openPage }) => {
         <ScrollView horizontal style={styles.horizontalScrollContainer}>
             {serviceTypes.map((service, index) => {
                 return <TouchableOpacity key={index} onPress={() => openPage(service.page, true)}>
-                    <LinearGradient start={{ x: -0.5, y: 0 }} end={{ x: 1, y: 1 }} colors={[colors.primary, colors.primary_variant]} style={styles.serviceButton} key={index} >
+                    <LinearGradient
+                        key={index}
+                        start={{ x: -0.5, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        colors={[colors.primary, colors.primary_variant]}
+                        style={styles.serviceButton}>
                         <Text style={styles.serviceName}>{service.name}</Text>
                         <Image style={styles.serviceIcon} source={service.icon}></Image>
                     </LinearGradient>
@@ -92,8 +92,6 @@ const styles = StyleSheet.create({
         color: colors.background,
         fontSize: 12
     }
-
-
 })
 
 export default JestaSelector

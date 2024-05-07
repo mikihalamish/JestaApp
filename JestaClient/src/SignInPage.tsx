@@ -1,11 +1,10 @@
-import React, { useState, useEffect, createContext } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Database from './Database';
-import { userInteface, userLoginInterface } from '../constants/Interfaces';
+import { UserInterface, UserLoginInterface } from '../constants/Interfaces';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
+import Database from './Database';
 import { useAuth } from './AuthContext';
 
 const windowWidth = Dimensions.get('window').width;
@@ -28,9 +27,13 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState(ERROR_MESSAGES.NO_ERROR)
     const [passwordError, setPasswordError] = useState(ERROR_MESSAGES.NO_ERROR)
-    const [user, setUser] = useState<userInteface | null>(null);
 
-    const { isAuthenticated, login, logout } = useAuth();
+    const { login } = useAuth();
+
+    useEffect(() => {
+        setEmailError(ERROR_MESSAGES.NO_ERROR)
+        setPasswordError(ERROR_MESSAGES.NO_ERROR)
+    }, [email, password])
 
     const verifyFields = () => {
         let verifyFlag = true
@@ -45,14 +48,9 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
         return verifyFlag
     }
 
-    useEffect(() => {
-        setEmailError(ERROR_MESSAGES.NO_ERROR)
-        setPasswordError(ERROR_MESSAGES.NO_ERROR)
-    }, [email, password])
-
     const loginUser = async () => {
         if (verifyFields()) {
-            let result: userLoginInterface = await Database.signIn(email, password)
+            let result: UserLoginInterface = await Database.signIn(email, password)
             if (result.status == LoginStatusDictionary.SUCCESS) {
                 login(result.user!)
                 openPage(PagesDictionary.SignInPage, false)
@@ -69,7 +67,7 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.SignInPage, false)}><View style={styles.sliderButton}></View></TouchableOpacity>
             <View style={styles.pageContainer}>
-                <Image style={styles.logo} source={require('../assets/logo-with-text (1).png')}></Image>
+                <Image style={styles.logo} source={require('../assets/logo-with-text.png')}></Image>
                 <View style={styles.ManualLoginContainer}>
                     <View style={styles.inputsContainer}>
                         <TextInput
@@ -103,7 +101,6 @@ export const SignInPage: React.FC<ChildProps> = ({ openPage }) => {
                         <Image style={styles.googleIcon} source={require('../assets/google.png')}></Image>
                         <Text style={styles.googleBannerText}>Sign In With Google</Text>
                     </TouchableOpacity>
-
                     <View style={styles.signUp}>
                         <TextInput style={styles.text}>new to Jesta?</TextInput>
                         <TouchableOpacity style={{ ...styles.loginButton, backgroundColor: colors.secondary_variant }} onPress={() => openPage(PagesDictionary.SignUpPage, true)}>

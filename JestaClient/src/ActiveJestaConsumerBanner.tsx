@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { colors } from '../constants/colors';
-import { PagesDictionary } from '../constants/PagesDictionary';
 import { requestInteface } from '../constants/Interfaces';
 import { StatusEnum } from '../constants/StatusEnum';
-import Database from './Database';
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: boolean) => void,
@@ -16,10 +13,6 @@ interface ChildProps {
 }
 
 const ActiveJestaConsumerBanner: React.FC<ChildProps> = ({ openPage, request, ViewProvider }) => {
-
-    const approveJesta = () => {
-        Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA)
-    }
 
     const requestStatus = (status: StatusEnum) => {
         if (status == StatusEnum.ACTIVE_JESTA)
@@ -77,23 +70,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
     },
-    bannerText: {
-        color: 'white',
-        fontSize: 24,
-        width: '60%',
-    },
     bannerIcon: {
         resizeMode: 'contain',
-    },
-    bannerType: {
-        color: 'white',
-        fontSize: 24,
-        width: '60%',
-    },
-    bannerTypeText: {
-        color: 'white',
-        fontSize: 16,
-        width: '40%',
     },
     bannerStatus: {
         width: '40%',
@@ -124,4 +102,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default ActiveJestaConsumerBanner;
+export default ActiveJestaConsumerBanner

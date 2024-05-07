@@ -12,10 +12,9 @@ const windowHeight = Dimensions.get('window').height;
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
     watingRequests: requestInteface[],
-    stopSearch: () => void
 }
 
-const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests, stopSearch }) => {
+const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests }) => {
 
     const [requestToView, setRequestToView] = useState<requestInteface>()
 
@@ -47,8 +46,9 @@ const WaitingRequests: React.FC<ChildProps> = ({ openPage, watingRequests, stopS
             {requestToView ?
                 <ViewFixingRequest
                     request={requestToView}
-                    close={close}
-                    stopSearch={stopSearch}></ViewFixingRequest> : false}
+                    close={close}>
+                </ViewFixingRequest>
+                : false}
         </View>
     )
 }
@@ -138,4 +138,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default WaitingRequests;
+export default WaitingRequests

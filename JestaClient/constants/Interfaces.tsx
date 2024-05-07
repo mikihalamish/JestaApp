@@ -1,4 +1,6 @@
+import { LatLng } from "react-native-maps"
 import { LoginStatusDictionary } from "./LoginStatusDictionary"
+import { PagesDictionary } from "./PagesDictionary"
 import { StatusEnum } from "./StatusEnum"
 import { UserStatusDictionary } from "./userStatusDictionary"
 
@@ -17,7 +19,7 @@ interface request {
     provider: string | null
 }
 
-interface user {
+interface User {
     email: string,
     firstName: string,
     lastName: string,
@@ -27,8 +29,8 @@ interface user {
     lastSeen: number
 }
 
-interface userLogin {
-    user: user | null,
+interface UserLogin {
+    user: User | null,
     status: LoginStatusDictionary
 }
 
@@ -47,11 +49,36 @@ interface FixingJesta {
     location: string
 }
 
+interface PickerItem {
+    label: string;
+    value: string;
+}
+
+interface FixType {
+    name: string,
+    icon: any
+}
+
+interface Service {
+    name: string,
+    icon: any,
+    page: PagesDictionary
+}
+
+interface UserLocation {
+    user: User,
+    coordinates: LatLng
+}
+
 export type {
-    user as userInteface,
+    User as UserInterface,
     request as requestInteface,
-    userLogin as userLoginInterface,
+    UserLogin as UserLoginInterface,
     Photo as PhotoInterface,
     FixingJesta as FixingJestaInterface,
-    Page as PageInterface
+    Page as PageInterface,
+    PickerItem as PickerItemInterface,
+    FixType as FixTypeInterface,
+    Service as ServiceInterface,
+    UserLocation as UserLocationInterface
 }

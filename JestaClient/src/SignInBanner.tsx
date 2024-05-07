@@ -4,14 +4,12 @@ import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: boolean) => void,
 }
 
 const SignInBanner: React.FC<ChildProps> = ({ openPage }) => {
-
     return (
         <TouchableOpacity style={styles.banner} onPress={() => openPage(PagesDictionary.SignInPage, true)}>
             <View style={styles.bannerContent}>
@@ -57,4 +55,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default SignInBanner;
+export default SignInBanner

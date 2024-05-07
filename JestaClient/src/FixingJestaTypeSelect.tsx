@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, TouchableHighlight, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
+import { FixTypeInterface } from '../constants/Interfaces';
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
+const windowWidth = Dimensions.get('window').width
+const windowHeight = Dimensions.get('window').height
 
 interface ChildProps {
     openPage: (pageToOpen: string, toOpen: Boolean) => void,
@@ -15,12 +16,7 @@ interface ChildProps {
     setOtherType: (value: string) => void
 }
 
-interface fixType {
-    name: string,
-    icon: any
-}
-
-const fixTypes: fixType[] = [
+const fixTypes: FixTypeInterface[] = [
     {
         name: "electricity",
         icon: require("../assets/electricity.png"),
@@ -50,13 +46,13 @@ const fixTypes: fixType[] = [
 const FixingJestaTypeSelect: React.FC<ChildProps> = ({ openPage, nextStage, selectedType, setSelectedType, otherType, setOtherType }) => {
 
     useEffect(() => {
-        setSelectedType('')
-    }, [otherType])
-
-    useEffect(() => {
         setSelectedType(selectedType)
         setOtherType(otherType)
-    },[])
+    }, [])
+
+    useEffect(() => {
+        setSelectedType('')
+    }, [otherType])
 
     return (
         <View style={styles.outerContainer}>
@@ -277,6 +273,6 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 20
     }
-});
+})
 
 export default FixingJestaTypeSelect

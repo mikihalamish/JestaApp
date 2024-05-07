@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, Alert } from 'react-native';
-import { PagesDictionary } from '../constants/PagesDictionary';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { colors } from '../constants/colors';
 import { StatusEnum } from '../constants/StatusEnum';
-import { requestInteface, userInteface } from '../constants/Interfaces';
+import { requestInteface, UserInterface } from '../constants/Interfaces';
 import Database from './Database';
 import { useAuth } from './AuthContext';
 
@@ -17,17 +16,16 @@ interface ChildProps {
 
 const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
 
-    const [providerDetails, setProviderDetails] = useState<userInteface | null>()
-    const { isAuthenticated, loggedUser, login, logout } = useAuth();
+    const [providerDetails, setProviderDetails] = useState<UserInterface | null>()
+
+    useEffect(() => {
+        getProvider()
+    }, [])
 
     const getProvider = async () => {
         const provider = await Database.getUser(request.provider!)
         setProviderDetails(provider)
     }
-
-    useEffect(() => {
-        getProvider()
-    }, [])
 
     const approveJesta = async () => {
         await Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.ACTIVE_JESTA)
@@ -63,26 +61,27 @@ const ViewProviderFound: React.FC<ChildProps> = ({ close, request }) => {
                     <Image style={styles.avatar} source={require('../assets/budget.png')}></Image>
                     <Text style={styles.scheduleText}>{request.details?.budget}$</Text>
                 </View>
-                {request.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION ? 
-                <View style={styles.controlButtonsContainerSuggestion}>
-                    <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
-                        <Image source={require('../assets/call-icon.png')}></Image>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.approveButton} onPress={approveJesta}>
-                        <Text style={styles.buttonText}>Approve Jesta Provider</Text>
-                    </TouchableOpacity>
-                </View> : false}
-                {request.status == StatusEnum.ACTIVE_JESTA ? <View style={styles.controlButtonsContainerActive}>
-                    <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
-                        <Image source={require('../assets/call-icon.png')}></Image>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.cancelButton} onPress={cancelJesta}>
-                        <Text style={styles.buttonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.finishButton} onPress={finishJesta}>
-                        <Text style={styles.buttonText}>Finish Jesta</Text>
-                    </TouchableOpacity>
-                </View> : false}
+                {request.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION ?
+                    <View style={styles.controlButtonsContainerSuggestion}>
+                        <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
+                            <Image source={require('../assets/call-icon.png')}></Image>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.approveButton} onPress={approveJesta}>
+                            <Text style={styles.buttonText}>Approve Jesta Provider</Text>
+                        </TouchableOpacity>
+                    </View> : false}
+                {request.status == StatusEnum.ACTIVE_JESTA ?
+                    <View style={styles.controlButtonsContainerActive}>
+                        <TouchableOpacity style={styles.callButton} onPress={() => { Linking.openURL('tel:' + providerDetails?.phoneNumber) }}>
+                            <Image source={require('../assets/call-icon.png')}></Image>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.cancelButton} onPress={cancelJesta}>
+                            <Text style={styles.buttonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.finishButton} onPress={finishJesta}>
+                            <Text style={styles.buttonText}>Finish Jesta</Text>
+                        </TouchableOpacity>
+                    </View> : false}
             </View>
         </View>
     )
@@ -172,19 +171,6 @@ const styles = StyleSheet.create({
         color: colors.font,
         marginLeft: '3%'
     },
-    descriptionContainer: {
-        height: '12%',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        flexDirection: 'row',
-        width: '90%',
-        alignSelf: 'center',
-    },
-    description: {
-        fontSize: 22,
-        color: colors.primary,
-        width: '100%'
-    },
     controlButtonsContainerSuggestion: {
         width: '90%',
         position: 'absolute',
@@ -267,11 +253,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.16,
         shadowRadius: 16,
-    },
-    saveText: {
-        color: 'green',
-        fontSize: 20
-    },
+    }
 })
 
-export default ViewProviderFound;
+export default ViewProviderFound

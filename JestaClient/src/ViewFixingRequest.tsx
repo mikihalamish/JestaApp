@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
-import { PagesDictionary } from '../constants/PagesDictionary';
 import { colors } from '../constants/colors';
 import { StatusEnum } from '../constants/StatusEnum';
-import { requestInteface, userInteface } from '../constants/Interfaces';
+import { requestInteface, UserInterface } from '../constants/Interfaces';
 import Database from './Database';
 import { useAuth } from './AuthContext';
 
@@ -13,26 +12,24 @@ const windowHeight = Dimensions.get('window').height;
 interface ChildProps {
     close: () => void,
     request: requestInteface,
-    stopSearch: () => void
 }
 
-const ViewFixingRequest: React.FC<ChildProps> = ({ close, request, stopSearch }) => {
+const ViewFixingRequest: React.FC<ChildProps> = ({ close, request }) => {
 
-    const [publisherDetails, setPublisherDetails] = useState<userInteface | null>()
-    const { isAuthenticated, loggedUser, login, logout } = useAuth();
+    const [publisherDetails, setPublisherDetails] = useState<UserInterface | null>()
+    const { loggedUser } = useAuth();
+
+    useEffect(() => {
+        getPublisher()
+    }, [])
 
     const getPublisher = async () => {
         const publisher = await Database.getUser(request.email!)
         setPublisherDetails(publisher)
     }
 
-    useEffect(() => {
-        getPublisher()
-    }, [])
-
     const approveRequest = () => {
         Database.updateRequestStatus(request.email!, request.publishTime, StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION, loggedUser?.email)
-        stopSearch()
         close()
     }
 
@@ -245,11 +242,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.16,
         shadowRadius: 16,
-    },
-    saveText: {
-        color: 'green',
-        fontSize: 20
-    },
+    }
 })
 
-export default ViewFixingRequest;
+export default ViewFixingRequest

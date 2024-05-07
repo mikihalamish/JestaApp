@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, Alert, Button, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
-import { userInteface, userLoginInterface } from '../constants/Interfaces';
-import Database from './Database';
-import { useAuth } from './AuthContext';
+import { UserInterface, UserLoginInterface } from '../constants/Interfaces';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
 import { UserStatusDictionary } from '../constants/userStatusDictionary';
+import Database from './Database';
+import { useAuth } from './AuthContext';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -46,20 +46,16 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
     const passwordRef = useRef<TextInput>(null);
     const passwordValidationRef = useRef<TextInput>(null);
     const scrollViewRef = useRef<ScrollView>(null);
-    
-    const { isAuthenticated, loggedUser, login, logout } = useAuth();
 
-    const handleInputFocus = (ref: React.RefObject<TextInput>) => {
-        setIsKeyBoard(true)
-        ref.current?.measureLayout(scrollViewRef.current! as any, (x, y, width, height) => {
-            scrollViewRef.current?.scrollTo({ x: 0, y: y - 20, animated: true });
-        });
-    };
+    const { login } = useAuth();
 
-    const toNextInput = (ref: React.RefObject<TextInput>) => {
-        handleInputFocus(ref)
-        ref.current?.focus()
-    }
+    useEffect(() => {
+        setFirstNameError(ERROR_MESSAGES.NO_ERROR)
+        setlastNameError(ERROR_MESSAGES.NO_ERROR)
+        setEmailError(ERROR_MESSAGES.NO_ERROR)
+        setPasswordError(ERROR_MESSAGES.NO_ERROR)
+        setVerifyPasswordError(ERROR_MESSAGES.NO_ERROR)
+    }, [firstName, lastName, email, password, passwordValidation, phone])
 
     const verifyFields = () => {
         let verifyFlag = true
@@ -88,7 +84,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
 
     const signUp = async () => {
         if (verifyFields()) {
-            const newUser: userInteface = {
+            const newUser: UserInterface = {
                 email: email,
                 firstName: firstName,
                 lastName: lastName,
@@ -98,7 +94,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                 lastSeen: Date.now()
             }
             if (await Database.signUp(newUser)) {
-                let result: userLoginInterface = await Database.signIn(email, password)
+                let result: UserLoginInterface = await Database.signIn(email, password)
                 if (result.status == LoginStatusDictionary.SUCCESS) {
                     login(result.user!)
                     openPage(PagesDictionary.SignInPage, false)
@@ -111,13 +107,17 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
         }
     }
 
-    useEffect(() => {
-        setFirstNameError(ERROR_MESSAGES.NO_ERROR)
-        setlastNameError(ERROR_MESSAGES.NO_ERROR)
-        setEmailError(ERROR_MESSAGES.NO_ERROR)
-        setPasswordError(ERROR_MESSAGES.NO_ERROR)
-        setVerifyPasswordError(ERROR_MESSAGES.NO_ERROR)
-    }, [firstName, lastName, email, password, passwordValidation, phone])
+    const handleInputFocus = (ref: React.RefObject<TextInput>) => {
+        setIsKeyBoard(true)
+        ref.current?.measureLayout(scrollViewRef.current! as any, (x, y, width, height) => {
+            scrollViewRef.current?.scrollTo({ x: 0, y: y - 20, animated: true });
+        });
+    };
+
+    const toNextInput = (ref: React.RefObject<TextInput>) => {
+        handleInputFocus(ref)
+        ref.current?.focus()
+    }
 
     return (
         <View style={styles.outerContainer}>
@@ -128,7 +128,7 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
                         <Image style={styles.backIcon} source={require('../assets/back.png')}></Image>
                     </TouchableOpacity>
                 </View>
-                <Image style={styles.logo} source={require('../assets/logo-with-text (1).png')}></Image>
+                <Image style={styles.logo} source={require('../assets/logo-with-text.png')}></Image>
                 <View style={styles.ManualLoginContainer}>
                     <View style={styles.googleButton}>
                         <Image style={styles.googleIcon} source={require('../assets/google.png')}></Image>
@@ -236,7 +236,6 @@ const SignUpPage: React.FC<ChildProps> = ({ openPage }) => {
 
 const styles = StyleSheet.create({
     outerContainer: {
-        /*  flex: 1, */
         position: 'absolute',
         alignItems: 'center',
         justifyContent: 'space-between',

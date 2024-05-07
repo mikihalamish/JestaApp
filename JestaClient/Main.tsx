@@ -1,105 +1,127 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import { requestInteface, UserInterface, UserLoginInterface, PageInterface } from './constants/Interfaces';
+import { colors } from './constants/colors';
+import { UserStatusDictionary } from './constants/userStatusDictionary';
+import { PagesDictionary } from './constants/PagesDictionary';
+import { LoginStatusDictionary } from './constants/LoginStatusDictionary';
+import { StatusEnum } from './constants/StatusEnum';
 import Map from './src/Map';
 import SignInBanner from "./src/SignInBanner";
-import { StyleSheet, Alert, View, Text, Image, TouchableOpacity } from 'react-native';
-import { colors } from './constants/colors';
 import SignInPage from './src/SignInPage';
 import SignUpPage from './src/SignUpPage';
-import { PagesDictionary } from './constants/PagesDictionary';
 import JestaSelector from './src/JestaSelector'
 import FixingJesta from './src/FixingJesta'
 import Database from './src/Database';
 import WaitingRequests from './src/WaitingRequests';
-import { requestInteface, userInteface, userLoginInterface, PageInterface } from './constants/Interfaces';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from './src/AuthContext';
-import { LoginStatusDictionary } from './constants/LoginStatusDictionary';
-import ViewFixingRequest from './src/ViewFixingRequest';
-import { StatusEnum } from './constants/StatusEnum';
 import ActiveJestaConsumerBanner from './src/ActiveJestaConsumerBanner';
-import { UserStatusDictionary } from './constants/userStatusDictionary';
 import ViewProviderFound from './src/ViewProviderFound';
+import { useAuth } from './src/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const APP_PAGES: PageInterface[] = [
+  {
+    name: PagesDictionary.SignInPage,
+    component: SignInPage,
+    isOpen: false
+  },
+  {
+    name: PagesDictionary.SignUpPage,
+    component: SignUpPage,
+    isOpen: false
+  },
+  {
+    name: PagesDictionary.FixingJesta,
+    component: FixingJesta,
+    isOpen: false
+  },
+  {
+    name: PagesDictionary.WaitingRequests,
+    component: WaitingRequests,
+    isOpen: false
+  }
+]
 
 const Main: React.FC = () => {
 
   const [pages, setPages] = useState<PageInterface[]>([])
   const [requests, setRequests] = useState<requestInteface[] | null>([])
-  const [isSearching, setIsSearching] = useState<boolean>(false)
-  const { isAuthenticated, loggedUser, login, logout } = useAuth();
   const [activeUserRequest, setActiveUserRequest] = useState<requestInteface | null>()
-  const [activeUsers, setActiveUsers] = useState<userInteface[]>()
+  const [activeUsers, setActiveUsers] = useState<UserInterface[]>()
   const [providerSuggestionToView, setProviderSuggestionToView] = useState<requestInteface>()
 
-  const app_pages: PageInterface[] = [
-    {
-      name: PagesDictionary.SignInPage,
-      component: SignInPage,
-      isOpen: false
-    },
-    {
-      name: PagesDictionary.SignUpPage,
-      component: SignUpPage,
-      isOpen: false
-    },
-    {
-      name: PagesDictionary.FixingJesta,
-      component: FixingJesta,
-      isOpen: false
-    },
-    {
-      name: PagesDictionary.WaitingRequests,
-      component: WaitingRequests,
-      isOpen: false
-    }
-  ]
+  const { isAuthenticated, loggedUser, login, logout } = useAuth()
 
-  const activeUsersInterval = () => {
+  const requestsIntervalRef = useRef<number | null>(null)
+  const userIntervalRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    setPages(APP_PAGES)
+    checkRememberedUser()
+  }, [])
+
+  useEffect(() => {
+    if (requestsIntervalRef.current !== null) {
+      clearInterval(requestsIntervalRef.current)
+      requestsIntervalRef.current = null
+    }
+
+    if (isAuthenticated) {
+      getRequestsWaiting()
+      requestsIntervalRef.current = setInterval(() => {
+        getRequestsWaiting()
+      }, 2000) as any
+    }
+
+    return () => {
+      if (requestsIntervalRef.current !== null) {
+        clearInterval(requestsIntervalRef.current)
+        requestsIntervalRef.current = null
+      }
+    }
+  }, [isAuthenticated])
+
+
+  useEffect(() => {
+    if (userIntervalRef.current !== null) {
+      clearInterval(userIntervalRef.current)
+      userIntervalRef.current = null
+    }
+
+    getActiveUsers()
+    userIntervalRef.current = setInterval(() => {
+      getActiveUsers()
+    }, 2000) as any
+
+    return () => {
+      if (userIntervalRef.current !== null) {
+        clearInterval(userIntervalRef.current)
+        userIntervalRef.current = null
+      }
+    }
+  }, [isAuthenticated])
+
+  const getActiveUsers = () => {
     Database.getUsers().then((result) => {
-      let users: userInteface[] | any = result
-      users = users.filter((user: userInteface) => user.status == UserStatusDictionary.ACTIVE)
+      let users: UserInterface[] | any = result
+      users = users.filter((user: UserInterface) => user.status == UserStatusDictionary.ACTIVE)
       setActiveUsers(users)
     })
   }
 
-  useEffect(() => {
-    setInterval(() => {
-      activeUsersInterval()
-    }, 3000)
-  }, [])
-
-  useEffect(() => {
-    setPages(app_pages)
-    checkRememberedUser()
-  }, [])
-
-  const getRquestsWaiting = async () => {
+  const getRequestsWaiting = async () => {
     Database.getRequests().then((res) => {
       setRequests([...res])
       const loggedUserRequest = res!.find((request) => request.email == loggedUser?.email &&
         request.status != StatusEnum.CANCELED_JESTA &&
         request.status != StatusEnum.JESTA_FINISHED)
       if (loggedUserRequest) {
-        /* if (loggedUserRequest.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && activeUserRequest?.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) {
-          Alert.alert("You Have An Update", "someone approved your Jesta!")
-        }
-        if (activeUserRequest?.status == StatusEnum.PUBLISHED_WITH_PROVIDER_SEGGESTION && loggedUserRequest.status == StatusEnum.ACTIVE_JESTA) {
-          Alert.alert("You Have An Update", "Your Jesta is on the way!")
-        } */
         setActiveUserRequest(loggedUserRequest)
       } else {
         setActiveUserRequest(null)
       }
     })
   }
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      getRquestsWaiting()
-      setInterval(() => {
-        getRquestsWaiting()
-      }, 2000)
-    }
-  }, [isAuthenticated])
 
   const openPage = (pageToOpen: string, toOpen: boolean) => {
     let tempPages: PageInterface[] = pages
@@ -113,7 +135,7 @@ const Main: React.FC = () => {
     const loggedEmail = await AsyncStorage.getItem('user_email')
     const loggedPassword = await AsyncStorage.getItem('user_password')
     if (loggedEmail?.length && loggedPassword?.length) {
-      let result: userLoginInterface = await Database.signIn(loggedEmail, loggedPassword)
+      let result: UserLoginInterface = await Database.signIn(loggedEmail, loggedPassword)
       if (result.status == LoginStatusDictionary.SUCCESS) {
         login(result.user!)
       }
@@ -131,15 +153,24 @@ const Main: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} id='main'>
       <Map
-        isSearching={(activeUserRequest != null && activeUserRequest.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL)}
-        activeUsers={activeUsers!} 
-        providerEmail={activeUserRequest?.status == StatusEnum.ACTIVE_JESTA ? activeUserRequest?.provider! : ''}/>
+        isSearching={activeUserRequest?.status === StatusEnum.PUBLISHED_BEFORE_APPROVAL}
+        activeUsers={activeUsers!}
+        providerEmail={activeUserRequest?.status == StatusEnum.ACTIVE_JESTA ? activeUserRequest?.provider! : ''} />
+      {isAuthenticated ?
+        <TouchableOpacity id='logout-button' style={styles.menuButton}>
+          <Text style={styles.username}>{loggedUser?.firstName}</Text>
+          <Image style={styles.profilePicture} source={require('./assets/avatar.png')}></Image>
+          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')} ></Image>
+          </TouchableOpacity>
+        </TouchableOpacity>
+        : false}
       {isAuthenticated && waitingRequests().length ?
-        <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
+        <TouchableOpacity id='waiting-requests-button' style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
           <View style={styles.requestsCount}>
-            <Text style={styles.requestsCountText}>{requests ? waitingRequests().length : 0}</Text>
+            <Text style={styles.requestsCountText}>{waitingRequests().length}</Text>
           </View>
           <Image style={styles.requestsAvatar} source={require('./assets/jesta-avatar.png')}></Image>
         </TouchableOpacity>
@@ -156,31 +187,22 @@ const Main: React.FC = () => {
           openPage={openPage}
           ViewProvider={setProviderSuggestionToView} />
         : false}
-      {isAuthenticated ?
-        <TouchableOpacity style={styles.menuButton} onPress={logout}>
-          <Text style={styles.username}>{loggedUser?.firstName}</Text>
-          <Image style={styles.profilePicture} source={require('./assets/avatar.png')}></Image>
-          <Image style={styles.logoutIcon} source={require('./assets/logout-icon.png')}></Image>
-        </TouchableOpacity>
-        : false}
-      {pages.map((page, index) =>
-        page.isOpen ?
-          <page.component
-            key={index}
-            openPage={openPage}
-            watingRequests={requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL) : []}
-            startSearch={() => setIsSearching(true)}
-            stopSearch={() => setIsSearching(false)} />
-          : false
-      )}
       {providerSuggestionToView ?
         <ViewProviderFound
           request={providerSuggestionToView}
           close={() => setProviderSuggestionToView(undefined)}
         />
         : false}
+      {pages.map((page, index) =>
+        page.isOpen ?
+          <page.component
+            key={index}
+            openPage={openPage}
+            watingRequests={requests ? requests!.filter((request) => request.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL && request.email != loggedUser?.email) : []} />
+          : false
+      )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -245,12 +267,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 16,
   },
-  logoutIcon: {
+  logoutButton: {
     resizeMode: 'contain',
     height: '100%',
     alignSelf: 'center',
     justifyContent: 'center',
     width: '25%',
+  },
+  logoutIcon: {
+    resizeMode: 'contain',
+    height: '100%',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: '100%',
     transform: [{ rotate: '180deg' }],
   },
   profilePicture: {
@@ -268,6 +297,6 @@ const styles = StyleSheet.create({
     width: '50%',
     padding: 2
   }
-});
+})
 
-export default Main;
+export default Main
