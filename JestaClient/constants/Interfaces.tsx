@@ -2,6 +2,12 @@ import { LoginStatusDictionary } from "./LoginStatusDictionary"
 import { StatusEnum } from "./StatusEnum"
 import { UserStatusDictionary } from "./userStatusDictionary"
 
+interface Page {
+    name: string,
+    component: React.ComponentType<any>,
+    isOpen: boolean
+}
+
 interface request {
     email: string | undefined | null,
     type: string,
@@ -46,5 +52,6 @@ export type {
     request as requestInteface,
     userLogin as userLoginInterface,
     Photo as PhotoInterface,
-    FixingJesta as FixingJestaInterface
+    FixingJesta as FixingJestaInterface,
+    Page as PageInterface
 }

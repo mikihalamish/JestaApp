@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Image, TextInput, TouchableOpacity, ScrollView, Alert, Keyboard } from 'react-native';
 import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import * as ImagePicker from 'expo-image-picker';
 import Toggle from './Toggle';
-import { getStorage, ref, uploadBytes } from 'firebase/storage';
 import Database from './Database';
 import { useAuth } from './AuthContext';
 
@@ -34,8 +33,8 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
     const { loggedUser } = useAuth();
 
     useEffect(() => {
-        setDescription(description),
-            setUploadedPhotos(uploadedPhotos)
+        setDescription(description)
+        setUploadedPhotos(uploadedPhotos)
     }, [])
 
     const handleChoosePhoto = async () => {
@@ -72,6 +71,13 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
         setIsLoading(false)
     }, [uploadedPhotos])
 
+    const setDescAndAutoHideKeyboard = (text: string) => {
+        setDescription(text);
+        if (text.endsWith('\n\n')) {
+            Keyboard.dismiss();
+        }
+    }
+
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.slider} onPress={() => openPage(PagesDictionary.FixingJesta, false)}>
@@ -93,7 +99,7 @@ const FixingJestaDetails: React.FC<ChildProps> = ({ openPage, prevStage, nextSta
                         multiline
                         numberOfLines={4}
                         value={description}
-                        onChangeText={setDescription}
+                        onChangeText={setDescAndAutoHideKeyboard}
                         autoCapitalize="none"
                         placeholder="describe your need"
                         autoCorrect

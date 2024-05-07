@@ -4,7 +4,6 @@ import { colors } from '../constants/colors';
 import { PagesDictionary } from '../constants/PagesDictionary';
 import { userInteface, userLoginInterface } from '../constants/Interfaces';
 import Database from './Database';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './AuthContext';
 import { LoginStatusDictionary } from '../constants/LoginStatusDictionary';
 import { UserStatusDictionary } from '../constants/userStatusDictionary';

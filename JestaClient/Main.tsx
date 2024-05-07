@@ -10,7 +10,7 @@ import JestaSelector from './src/JestaSelector'
 import FixingJesta from './src/FixingJesta'
 import Database from './src/Database';
 import WaitingRequests from './src/WaitingRequests';
-import { requestInteface, userInteface, userLoginInterface } from './constants/Interfaces';
+import { requestInteface, userInteface, userLoginInterface, PageInterface } from './constants/Interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './src/AuthContext';
 import { LoginStatusDictionary } from './constants/LoginStatusDictionary';
@@ -22,7 +22,7 @@ import ViewProviderFound from './src/ViewProviderFound';
 
 const Main: React.FC = () => {
 
-  const [pages, setPages] = useState<Pages[]>([])
+  const [pages, setPages] = useState<PageInterface[]>([])
   const [requests, setRequests] = useState<requestInteface[] | null>([])
   const [isSearching, setIsSearching] = useState<boolean>(false)
   const { isAuthenticated, loggedUser, login, logout } = useAuth();
@@ -30,13 +30,7 @@ const Main: React.FC = () => {
   const [activeUsers, setActiveUsers] = useState<userInteface[]>()
   const [providerSuggestionToView, setProviderSuggestionToView] = useState<requestInteface>()
 
-  interface Pages {
-    name: string,
-    component: React.ComponentType<any>,
-    isOpen: boolean
-  }
-
-  const app_pages: Pages[] = [
+  const app_pages: PageInterface[] = [
     {
       name: PagesDictionary.SignInPage,
       component: SignInPage,
@@ -108,7 +102,7 @@ const Main: React.FC = () => {
   }, [isAuthenticated])
 
   const openPage = (pageToOpen: string, toOpen: boolean) => {
-    let tempPages: Pages[] = pages
+    let tempPages: PageInterface[] = pages
     tempPages.map((page) => {
       page.name == pageToOpen ? page.isOpen = toOpen : true
     })
@@ -138,7 +132,10 @@ const Main: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Map isSearching={(activeUserRequest != null && activeUserRequest.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL)} activeUsers={activeUsers!} />
+      <Map
+        isSearching={(activeUserRequest != null && activeUserRequest.status == StatusEnum.PUBLISHED_BEFORE_APPROVAL)}
+        activeUsers={activeUsers!} 
+        providerEmail={activeUserRequest?.status == StatusEnum.ACTIVE_JESTA ? activeUserRequest?.provider! : ''}/>
       {isAuthenticated && waitingRequests().length ?
         <TouchableOpacity style={styles.waitingRequests} onPress={() => openPage(PagesDictionary.WaitingRequests, true)}>
           <View style={styles.requestsCount}>
@@ -254,7 +251,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     width: '25%',
-    transform: [{rotate: '180deg'}],
+    transform: [{ rotate: '180deg' }],
   },
   profilePicture: {
     resizeMode: 'contain',
