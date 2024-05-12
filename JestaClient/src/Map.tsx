@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Image, Animated } from 'react-native';
+import { StyleSheet, View, Image, Animated, Platform } from 'react-native';
 import { colors } from '../constants/colors';
 import { UserLocationInterface, UserInterface } from '../constants/Interfaces';
 import { useAuth } from './AuthContext';
 import Radar from './Radar';
-import MapView, { PROVIDER_GOOGLE, Marker, LatLng } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, PROVIDER_DEFAULT, Marker, LatLng } from 'react-native-maps';
 
 interface ChildProps {
     isSearching: boolean,
@@ -81,7 +81,7 @@ const Map: React.FC<ChildProps> = ({ isSearching, activeUsers, providerEmail }) 
         <View style={styles.container}>
             {isSearching && isAuthenticated ? <Radar></Radar> : false}
             <MapView
-                provider={PROVIDER_GOOGLE}
+                provider={Platform.OS == 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
                 style={styles.map}
                 initialRegion={{
                     ...PETAH_TIKVA_COORDINATES,
